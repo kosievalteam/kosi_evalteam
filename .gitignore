@@ -2,3 +2,5 @@ analysis/data/
 analysis/fonts/
 analysis/output*/typology_assignments.*
 __pycache__/
+analysis/deliverables/*.html
+analysis/deliverables/*.jpg
