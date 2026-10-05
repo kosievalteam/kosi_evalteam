@@ -7,8 +7,10 @@
 출력: data/emb_<name>.npy (원 임베딩), data/emb_<name>_fn.npy (산업영역 방향 제거본)
   <name> = 모델명의 마지막 경로 요소 소문자 (예: bge-m3, multilingual-e5-large, text-embedding-3-large)
 필요 네트워크: st → huggingface.co, cdn-lfs.hf.co, cdn-lfs-us-1.hf.co / openai → api.openai.com
+  ※ huggingface_hub 의 Xet 백엔드(cas-server.xethub.hf.co)가 막힌 환경에서는 HF_HUB_DISABLE_XET=1 로 실행 (아래에서 기본 설정)
 """
 import os, sys, argparse, json, numpy as np, pandas as pd
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")   # cdn-lfs 경로로 내려받기 (Xet 서버 차단 환경 대응)
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 ap = argparse.ArgumentParser()
 ap.add_argument("--backend", choices=["st", "openai"], default="st")
