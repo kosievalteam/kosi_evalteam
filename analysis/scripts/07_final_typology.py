@@ -10,7 +10,7 @@ df["c"] = lab
 raw = pd.read_csv("data/biz_central_2024_2026.csv").set_index("id"); df["세부지원"] = df.id.map(raw["세부지원"])
 MID = {  # k=24 군집 → 중분류 (군집 프로파일 해석; output/cluster_profile_fn_k24 참조)
  11:"A1 기술개발(일반 R&D)", 8:"A2 원천·핵심기술 개발", 2:"A3 산학연·공동 R&D", 19:"A3 산학연·공동 R&D", 0:"A4 바이오·전략기술 R&D·사업화", 16:"A5 모빌리티 기술개발·기반구축", 23:"A6 에너지 기술개발·실증",
- 1:"B1 지역·특구 상용화·공공실증", 15:"B2 현장 혁신·보급(스마트제조·현장지도)",
+ 1:"B1 상용화·공공실증(AI응용·특구·조달)", 15:"B2 현장 적용·보급(스마트제조 등)",
  12:"C1 창업·벤처 육성",
  5:"D1 수출 마케팅(전시·상담회)", 9:"D2 해외시장 진출", 20:"D3 수출업체 육성(농식품 등)",
  17:"E1 정책자금 융자(운전·시설)", 21:"E1 정책자금 융자(운전·시설)", 7:"E2 투자·보증·자금조달 지원",
@@ -19,7 +19,7 @@ MID = {  # k=24 군집 → 중분류 (군집 프로파일 해석; output/cluster
  13:"H1 고용장려금·고용안정", 14:"H2 산업안전·사업주 훈련지원",
  3:"I1 컨설팅·바우처·마케팅 서비스", 4:"I2 판로·공공구매 지원",
  18:"J1 복합·기반조성(판로·제도·생태계 등)"}
-MAJ = {"A":"A. 기술개발(R&D)", "B":"B. 실증·상용화·기술사업화", "C":"C. 창업·벤처 육성", "D":"D. 수출·해외진출", "E":"E. 자금공급(융자·보증·투자)",
+MAJ = {"A":"A. 기술개발(R&D)", "B":"B. 실증·상용화·현장보급", "C":"C. 창업·벤처 육성", "D":"D. 수출·해외진출", "E":"E. 자금공급(융자·보증·투자)",
        "F":"F. 시설·설비 투자", "G":"G. 인력양성", "H":"H. 고용·노동환경", "I":"I. 경영·사업화 서비스", "J":"J. 복합·기반조성(기타)"}
 df["중분류_연도별"] = df.c.map(MID); df["대분류_연도별"] = df["중분류_연도별"].str[0].map(MAJ); assert df["중분류_연도별"].notna().all()
 # ---- 내역사업 단위 일관 배정: 같은 내역사업(소관|세부|내역)의 연도별 임베딩 평균 → 최근접 군집 중심
@@ -35,12 +35,23 @@ nm = df["세부사업명"].fillna("") + " " + df["내역사업명"].fillna("")
 r1 = (df["세부사업명"].fillna("").str.contains(r"\(융자\)") | df["세부지원"].fillna("").str.contains("융자")) & ~df["대분류"].str[0].isin(list("CDEF"))
 r2 = nm.str.contains("보증|대위변제|팩토링|보험금|재보증") & (df["대분류"].str[0] != "E")
 df.loc[r1, "중분류"] = "E1 정책자금 융자(운전·시설)"; df.loc[r2, "중분류"] = "E2 투자·보증·자금조달 지원"
-df["대분류"] = df["중분류"].str[0].map(MAJ); df["보정"] = np.where(r1, "R1 융자", np.where(r2, "R2 보증·보험", ""))
+df["보정"] = np.where(r1, "R1 융자", np.where(r2, "R2 보증·보험", ""))
+# R3 경계 사례 수작업 조정: B(실증·상용화) 군집에 포함됐으나 목적이 인력양성·고용·경영서비스·시설인 사업 (내역사업명 기준)
+R3 = {"G1 전문인력 양성·채용": ["ICT이노베이션스퀘어조성", "산학융합촉진지원", "특화단지재직자교육", "재직자맞춤형기술교육", "스마트팜기업재직자전문교육운영"],
+      "H2 산업안전·사업주 훈련지원": ["차별없는일터지원단운영", "중장년내일센터", "중대재해대응지원"],
+      "I1 컨설팅·바우처·마케팅 서비스": ["중소기업 IP 창출지원", "중소기업IP창출지원", "중소기업IP바로지원", "현장클리닉", "공동A/S지원", "AI바우처지원", "HACCP인증지원", "소규모 식품업체 맞춤형 현장지도", "소규모식품업체맞춤형현장지도"],
+      "F1 시설·설비 현대화": ["클린제조환경조성"]}
+n_r3 = 0
+for mid_name, names in R3.items():
+    m3 = df["대분류"].str[0].eq("B") & df["내역사업명"].str.replace(" ", "").isin([n.replace(" ", "") for n in names])
+    df.loc[m3, "중분류"] = mid_name; df.loc[m3, "보정"] = "R3 경계조정"; n_r3 += int(m3.sum())
+df["대분류"] = df["중분류"].str[0].map(MAJ)
+print("규칙 R3", n_r3)
 print("일관배정으로 변경", n_changed_consist, "| 규칙 R1", int(r1.sum()), "R2", int(r2.sum()))
 aris = [ari(lab, KMeans(24, n_init=10, random_state=s).fit_predict(E)) for s in range(1, 11)]
 taxo = df["지원분야중분류"].fillna("NA"); m = taxo != "NA"
 g = pd.DataFrame({"k": key, "mid": df["중분류_연도별"], "maj": df["대분류_연도별"]}); g = g[g.groupby("k").k.transform("size") > 1]
-stab = dict(n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
+stab = dict(n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
             consist_mid=(g.groupby("k").mid.nunique() == 1).mean(), consist_maj=(g.groupby("k").maj.nunique() == 1).mean(), n_multi_year_programs=g.k.nunique())
 lab0 = KMeans(24, n_init=10, random_state=0).fit_predict(np.load("data/emb_lsa.npy")); stab["nmi_taxo_lsa"] = nmi(taxo[m], lab0[m]); stab["nmi_somewon_lsa"] = nmi(df["소관"], lab0)
 json.dump({k: float(v) for k, v in stab.items()}, open("output/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)

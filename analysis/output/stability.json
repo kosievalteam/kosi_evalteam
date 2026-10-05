@@ -2,6 +2,7 @@
  "n_changed_by_program_consistency": 150.0,
  "n_rule_R1": 52.0,
  "n_rule_R2": 6.0,
+ "n_rule_R3": 34.0,
  "ari_mean": 0.4071807408529919,
  "ari_min": 0.36461216185537804,
  "silhouette": 0.07519210584011543,
