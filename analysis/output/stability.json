@@ -1,0 +1,15 @@
+{
+ "n_changed_by_program_consistency": 150.0,
+ "n_rule_R1": 52.0,
+ "n_rule_R2": 6.0,
+ "ari_mean": 0.4071807408529919,
+ "ari_min": 0.36461216185537804,
+ "silhouette": 0.07519210584011543,
+ "nmi_taxo": 0.3790266456853909,
+ "nmi_somewon": 0.2066808163095112,
+ "consist_mid": 0.768141592920354,
+ "consist_maj": 0.8176991150442477,
+ "n_multi_year_programs": 565.0,
+ "nmi_taxo_lsa": 0.3599234719004458,
+ "nmi_somewon_lsa": 0.38338625329199744
+}

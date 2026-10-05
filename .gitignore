@@ -1,0 +1,4 @@
+analysis/data/
+analysis/fonts/
+analysis/output/typology_assignments.*
+__pycache__/
