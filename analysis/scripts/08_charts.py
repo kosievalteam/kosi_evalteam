@@ -10,6 +10,7 @@ SURF, TXT, TXT2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e0"
 ORD = ["#86b6ef", "#2a78d6", "#104281"]          # 연도(순서형): 참조 팔레트 blue 250/450/650
 BLUE, GRAY = "#2a78d6", "#d6d5cf"
 a = pd.read_parquet("data/final_assign.parquet" if OUT == "output" else f"data/final_assign_{EMB}.parquet"); E = np.load(f"data/emb_{EMB}.npy"); corp = pd.read_parquet("data/corpus.parquet")
+n_all = len(a); a = a[~a["대분류"].str.startswith("유형화 제외")]; n_ex = n_all - len(a)
 majors = sorted(a["대분류"].unique())
 # ---- 그림1: 대분류별 예산(조원) 2024~2026 가로 막대
 piv = a.pivot_table(index="대분류", columns="year", values="내역예산", aggfunc="sum").fillna(0) / 1e6   # 백만원→조원
@@ -22,13 +23,13 @@ for yi, v in zip(y, piv[2026]): ax.text(v + 0.08, yi + h, f"{v:.2f}", va="center
 ax.set_yticks(y); ax.set_yticklabels(piv.index, fontsize=9.5); ax.xaxis.grid(True, color=GRID, zorder=0); ax.set_axisbelow(True)
 ax.set_xlabel("내역사업 예산 합계(조원)", fontsize=9.5)
 fig.text(0.01, 0.975, "지원목적 유형별 중앙부처 내역사업 예산, 2024~2026", fontsize=12, fontweight="bold", color=TXT, va="top")
-fig.text(0.01, 0.935, "값 표시는 2026년. 자료: 정책평가팀 DB(중앙부처 내역사업 2,189건) 기준 유형 배정", fontsize=8.5, color=TXT2, va="top")
+fig.text(0.01, 0.935, f"값 표시는 2026년. 자료: 정책평가팀 DB(중앙부처 내역사업 2,189건) 기준 유형 배정, 목적 서술 불충분 {n_ex}건은 제외", fontsize=8.5, color=TXT2, va="top")
 ax.legend(frameon=False, fontsize=9, loc="lower right", title="연도", title_fontsize=9); fig.tight_layout(rect=(0, 0, 1, 0.91)); fig.savefig(f"{OUT}/fig1_budget_by_type.png"); plt.close(fig)
 # ---- 그림2: 2차원 지도(t-SNE) 소다중 — 패널마다 해당 유형만 강조
 from sklearn.manifold import TSNE
 Z = TSNE(2, perplexity=35, init="pca", random_state=0).fit_transform(E); np.save(f"data/tsne_{EMB}.npy", Z)
-m = corp[["id"]].merge(a[["id", "대분류"]], on="id")["대분류"].values
-fig, axes = plt.subplots(2, 5, figsize=(13, 5.8)); fig.patch.set_facecolor(SURF)
+m = corp[["id"]].merge(a[["id", "대분류"]], on="id", how="left")["대분류"].fillna("(제외)").values
+fig, axes = plt.subplots(2, 4, figsize=(13, 6.4)); fig.patch.set_facecolor(SURF)
 for ax, g in zip(axes.ravel(), majors):
     ax.set_facecolor(SURF); sel = m == g
     ax.scatter(Z[~sel, 0], Z[~sel, 1], s=4, c=GRAY, linewidths=0, rasterized=True)
@@ -51,7 +52,7 @@ for i in range(H.shape[0]):
         v = H.values[i, j]
         if v >= 50: ax.text(j, i, f"{v:,.0f}", ha="center", va="center", fontsize=7.8, color="white" if v > H.values.max() * 0.25 else TXT)
 fig.text(0.01, 0.975, "소관 × 지원목적 유형별 2026년 내역사업 예산(십억원, 상위 12개 소관)", fontsize=11.5, fontweight="bold", color=TXT, va="top")
-fig.text(0.01, 0.935, "A 기술개발  B 실증·상용화  C 창업  D 수출·해외진출  E 자금공급  F 시설·설비  G 인력양성  H 고용·노동  I 경영·사업화 서비스  J 복합·기반조성", fontsize=8, color=TXT2, va="top")
+fig.text(0.01, 0.935, "  ".join(f"{k[:1]} {k[3:].split('(')[0]}" for k in majors), fontsize=8, color=TXT2, va="top")
 for sp in ax.spines.values(): sp.set_visible(False)
 cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02); cb.set_label("십억원", fontsize=8.5); cb.outline.set_visible(False)
 fig.tight_layout(rect=(0, 0, 1, 0.91)); fig.savefig(f"{OUT}/fig3_heatmap_somewon_type_2026.png"); plt.close(fig); print("figs saved")

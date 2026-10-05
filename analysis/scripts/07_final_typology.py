@@ -62,17 +62,24 @@ stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_
 lab0 = KMeans(K, n_init=10, random_state=0).fit_predict(np.load("data/emb_lsa.npy")); stab["nmi_taxo_lsa"] = nmi(taxo[m], lab0[m]); stab["nmi_somewon_lsa"] = nmi(df["소관"], lab0)
 json.dump({k: (v if isinstance(v, str) else float(v)) for k, v in stab.items()}, open(f"{OUT}/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)
 yrs = [2024, 2025, 2026]
+EXCL = df["중분류"].str.startswith(RP) if RP else pd.Series(False, index=df.index)   # 유형화 제외(목적 서술 불충분)
+dt = df[~EXCL]                                                                        # 유형 집계는 유형화된 사업만 대상
+T0 = pd.DataFrame({"유형화 제외 건수": df[EXCL].groupby("year").size().reindex(yrs).fillna(0).astype(int),
+                   "전체 건수": df.groupby("year").size().reindex(yrs), "유형화 제외 예산(백만원)": df[EXCL].groupby("year").내역예산.sum().reindex(yrs).fillna(0).round(0),
+                   "전체 예산(백만원)": df.groupby("year").내역예산.sum().reindex(yrs).round(0)})
+T0["건수 비중(%)"] = (T0["유형화 제외 건수"] / T0["전체 건수"] * 100).round(1); T0["예산 비중(%)"] = (T0["유형화 제외 예산(백만원)"] / T0["전체 예산(백만원)"] * 100).round(1)
+T0.to_csv(f"{OUT}/T0_excluded_by_year.csv", encoding="utf-8-sig")
 def agg(by):
-    n = df.pivot_table(index=by, columns="year", values="id", aggfunc="count").reindex(columns=yrs).fillna(0).astype(int)
-    b = df.pivot_table(index=by, columns="year", values="내역예산", aggfunc="sum").reindex(columns=yrs).fillna(0).round(0)
+    n = dt.pivot_table(index=by, columns="year", values="id", aggfunc="count").reindex(columns=yrs).fillna(0).astype(int)
+    b = dt.pivot_table(index=by, columns="year", values="내역예산", aggfunc="sum").reindex(columns=yrs).fillna(0).round(0)
     t = pd.concat({"건수": n, "예산(백만원)": b}, axis=1); t[("예산(백만원)", "증감률24→26(%)")] = ((b[2026] / b[2024] - 1) * 100).round(1)
     t[("예산(백만원)", "2026비중(%)")] = (b[2026] / b[2026].sum() * 100).round(1); return t
 T1 = agg("대분류"); T2 = agg(["대분류", "중분류"]); T1.to_csv(f"{OUT}/T1_major_by_year.csv", encoding="utf-8-sig"); T2.to_csv(f"{OUT}/T2_mid_by_year.csv", encoding="utf-8-sig")
-d26 = df[df.year == 2026]
+d26 = dt[dt.year == 2026]
 T3 = d26.pivot_table(index="소관", columns="대분류", values="내역예산", aggfunc="sum").fillna(0).round(0); T3["합계"] = T3.sum(1); T3 = T3.sort_values("합계", ascending=False); T3.to_csv(f"{OUT}/T3_somewon_x_major_2026.csv", encoding="utf-8-sig")
 T3n = d26.pivot_table(index="소관", columns="대분류", values="id", aggfunc="count").fillna(0).astype(int); T3n.to_csv(f"{OUT}/T3n_somewon_x_major_2026_count.csv", encoding="utf-8-sig")
 T4 = pd.crosstab(df["지원분야중분류"].fillna("(결측)"), df["대분류"]); T4["합계"] = T4.sum(1); T4 = T4.sort_values("합계", ascending=False); T4.to_csv(f"{OUT}/T4_taxonomy_x_major.csv", encoding="utf-8-sig")
-T5 = pd.crosstab(df["세부지원"].fillna("(결측)").str.replace(r" \(국고보조율.*\)", "", regex=True), df["대분류"]); T5 = T5.loc[T5.sum(1).sort_values(ascending=False).index]; T5.to_csv(f"{OUT}/T5_fundingform_x_major.csv", encoding="utf-8-sig")
+T5 = pd.crosstab(dt["세부지원"].fillna("(결측)").str.replace(r" \(국고보조율.*\)", "", regex=True), dt["대분류"]); T5 = T5.loc[T5.sum(1).sort_values(ascending=False).index]; T5.to_csv(f"{OUT}/T5_fundingform_x_major.csv", encoding="utf-8-sig")
 T6 = df.groupby("대분류").agg(건수=("id", "count"), 공고보유율=("has_gonggo", "mean"), 내역목적보유율=("목적출처", lambda s: (s == "내역목적").mean()), 평균토큰=("n_tok", "mean")).round(3); T6.to_csv(f"{OUT}/T6_text_coverage_by_major.csv", encoding="utf-8-sig")
 dd = df.assign(k=key).sort_values("year"); ch = dd.groupby("k").filter(lambda x: x.대분류_연도별.nunique() > 1)
 T7 = ch.groupby("k").apply(lambda x: " → ".join(f"{y}:{mm[:1]}" for y, mm in zip(x.year, x.대분류_연도별))).rename("연도별 텍스트기준 배정").reset_index()

@@ -14,7 +14,7 @@ sa, sb = json.load(open(f"{args.out_a}/stability.json")), json.load(open(f"{args
 for k in ["silhouette", "ari_mean", "nmi_taxo", "nmi_somewon", "consist_mid", "consist_maj"]: res[f"{k}_a"] = sa[k]; res[f"{k}_b"] = sb[k]
 print(json.dumps({k: round(float(v), 3) for k, v in res.items()}, ensure_ascii=False, indent=1))
 ct = pd.crosstab(m.대분류_a, m.대분류_b); ct.columns = [c[:1] for c in ct.columns]; print(ct.to_string())
-d26 = m[m.year == 2026]
+d26 = m[(m.year == 2026) & ~m.대분류_a.str.startswith("유형화") & ~m.대분류_b.str.startswith("유형화")]
 share = pd.DataFrame({args.a: d26.groupby(d26.대분류_a.str[0]).내역예산.sum(), args.b: d26.groupby(d26.대분류_b.str[0]).내역예산.sum()}).fillna(0)
 share = (share / share.sum() * 100).round(1); share["차이(p)"] = (share[args.b] - share[args.a]).round(1); print(share.to_string())
 # 예산 상위 사업 중 대분류가 다른 사례
