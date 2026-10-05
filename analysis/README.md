@@ -35,7 +35,7 @@ python scripts/08_charts.py --emb bge-m3_fn --out output_bge-m3
 군집 번호는 임베딩마다 달라지므로 매핑 파일(군집 번호 → 중분류·대분류, 경계 조정 목록)은 새로 작성해야 합니다. 형식은 `config/mapping_fn_k24.json` 참조.
 
 실행 환경 요건 (Claude Code 클라우드 환경의 경우 환경 설정 → Network access에서 허용):
-- sentence-transformers: `huggingface.co`, `cdn-lfs.hf.co`, `cdn-lfs-us-1.hf.co` (모델 약 2.2GB, CPU 4코어 기준 2,189건 추론 약 15~30분). 스크립트가 `HF_HUB_DISABLE_XET=1`을 기본 설정하므로 `cas-server.xethub.hf.co`는 허용하지 않아도 됨
+- sentence-transformers: `huggingface.co`(메타데이터)와 가중치 CDN `us.aws.cdn.hf.co`(2026년 10월 현재 리다이렉트 대상; 가능하면 `*.hf.co` 전체 허용). 모델 약 2.3GB, CPU 4코어 기준 2,189건 추론 약 15~30분. 스크립트가 `HF_HUB_DISABLE_XET=1`을 기본 설정하므로 `cas-server.xethub.hf.co`는 불필요
 - OpenAI: `api.openai.com` + 환경변수 `OPENAI_API_KEY`
 
 

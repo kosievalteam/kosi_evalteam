@@ -6,7 +6,7 @@
   python scripts/02b_embed_pretrained.py --from-npy data/emb_w2v.npy                       # 기존 임베딩에 영역 방향 제거만 적용
 출력: data/emb_<name>.npy (원 임베딩), data/emb_<name>_fn.npy (산업영역 방향 제거본)
   <name> = 모델명의 마지막 경로 요소 소문자 (예: bge-m3, multilingual-e5-large, text-embedding-3-large)
-필요 네트워크: st → huggingface.co, cdn-lfs.hf.co, cdn-lfs-us-1.hf.co / openai → api.openai.com
+필요 네트워크: st → huggingface.co, us.aws.cdn.hf.co (가중치 CDN; *.hf.co 허용 권장) / openai → api.openai.com
   ※ huggingface_hub 의 Xet 백엔드(cas-server.xethub.hf.co)가 막힌 환경에서는 HF_HUB_DISABLE_XET=1 로 실행 (아래에서 기본 설정)
 """
 import os, sys, argparse, json, numpy as np, pandas as pd
