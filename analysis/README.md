@@ -17,10 +17,27 @@ python scripts/01_build_corpus.py      # 문서 구성 + 형태소(kiwipiepy) �
 python scripts/02_embed.py             # TF-IDF→LSA / 단어벡터 / 결합 임베딩
 python scripts/03_select_k.py          # 임베딩·k별 품질지표
 python scripts/05_function_axis.py     # 지원목적(기능) 축 임베딩: 산업영역 어휘 가중 완화
+python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3      # (선택) 사전학습 문장 임베딩 + 영역 방향 제거 → data/emb_bge-m3_fn.npy
 python scripts/04b_compact_profile.py 24 fn   # 군집 프로파일(라벨링 근거)
-python scripts/07_final_typology.py    # 최종 유형 배정·집계표·안정성 지표
+python scripts/07_final_typology.py    # 최종 유형 배정·집계표·안정성 지표 (기본: --emb fn --k 24 --map config/mapping_fn_k24.json)
 python scripts/08_charts.py            # 보고서 도표
 ```
+
+## 사전학습 문장 임베딩으로 교체하기
+`02b_embed_pretrained.py`는 bge-m3·multilingual-e5(sentence-transformers, 로컬 추론) 또는 OpenAI text-embedding-3(API)로
+동일 문서를 임베딩하고, 지원산업·소관을 판별하는 선형 방향(LDA)을 제거한 `emb_<모델>_fn.npy`를 만듭니다.
+```bash
+python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3
+python scripts/04b_compact_profile.py 24 bge-m3_fn            # 군집 프로파일을 보고 해석 → config/mapping_<모델>_k24.json 작성
+python scripts/07_final_typology.py --emb bge-m3_fn --k 24 --map config/mapping_bge-m3_k24.json --out output_bge-m3
+python scripts/08_charts.py --emb bge-m3_fn --out output_bge-m3
+```
+군집 번호는 임베딩마다 달라지므로 매핑 파일(군집 번호 → 중분류·대분류, 경계 조정 목록)은 새로 작성해야 합니다. 형식은 `config/mapping_fn_k24.json` 참조.
+
+실행 환경 요건 (Claude Code 클라우드 환경의 경우 환경 설정 → Network access에서 허용):
+- sentence-transformers: `huggingface.co`, `cdn-lfs.hf.co`, `cdn-lfs-us-1.hf.co` (모델 약 2.2GB, CPU 4코어 기준 2,189건 추론 약 15~30분)
+- OpenAI: `api.openai.com` + 환경변수 `OPENAI_API_KEY`
+
 
 ## 추출 SQL (biz)
 ```sql
