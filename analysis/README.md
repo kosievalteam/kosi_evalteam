@@ -32,6 +32,9 @@ python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파
 python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v3.json --out output_bge-m3
 python scripts/08_charts.py --emb bge-m3_hyb --out output_bge-m3
 python scripts/09_compare_embeddings.py --a fn --b bge-m3_hyb --out-b output_bge-m3   # LSA 단독 결과와 비교
+python scripts/11_axis_typology.py profile --k_target 16   # 대상·내용 축 군집 프로파일 → config/axes_mapping.json 작성
+python scripts/11_axis_typology.py final --k_target 16     # 대상·수단·내용 유형 확정, X1~X8 집계표
+python scripts/12_axis_charts.py                           # 4축 도표(fig5, fig6)
 ```
 결합 임베딩(`_hyb`)을 쓰는 이유: 문장 임베딩 단독은 산업영역 의존(소관 NMI 0.35)이 크고 연도 간 일치율(0.71)이 낮으며, 기능가중 LSA와 결합하면 일치율 0.83, 기존 분류 정합성 0.41로 모든 지표가 개선됨.
 군집 번호는 임베딩마다 달라지므로 매핑 파일은 새로 작성해야 합니다. 형식은 `config/mapping_bge-m3_hyb_k24_v3.json` 참조.
@@ -55,7 +58,7 @@ from biz where gubun='중앙부처' and year between 2024 and 2026 order by id;
 | 파일 | 내용 |
 |---|---|
 | `REPORT.md` | 개조식 분석 보고서 (본 결과: bge-m3 결합 임베딩, 비교: LSA 단독) |
-| `output_bge-m3/` | **본 결과**: bge-m3 결합 임베딩 기반 집계표·도표·지표·LSA 비교표 |
+| `output_bge-m3/` | **본 결과**: bge-m3 결합 임베딩 기반 집계표·도표·지표·LSA 비교표, 4축(대상·수단·내용) 집계표 X1~X8 |
 | `output/T1_major_by_year.csv` | (LSA 단독) 대분류별 건수·예산(2024~2026) |
 | `output/T2_mid_by_year.csv` | 중분류별 건수·예산 |
 | `output/T3_somewon_x_major_2026.csv` | 소관 × 유형 (2026 예산) |
