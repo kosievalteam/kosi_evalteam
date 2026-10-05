@@ -24,23 +24,40 @@ df["중분류"] = df.c_prog.map(MID); df["대분류"] = df["중분류"].str[0].m
 n_changed_consist = int((df["중분류"] != df["중분류_연도별"]).sum())
 # ---- 메타데이터 보정규칙(투명성: 건수 보고). R1 융자사업이 자금·창업·수출·시설 외 유형이면 E1. R2 보증·보험·대위변제·팩토링은 E2.
 nm = df["세부사업명"].fillna("") + " " + df["내역사업명"].fillna("")
-r1 = (df["세부사업명"].fillna("").str.contains(r"\(융자\)") | df["세부지원"].fillna("").str.contains("융자")) & ~df["대분류"].str[0].isin(list("CDEF"))
-r2 = nm.str.contains("보증|대위변제|팩토링|보험금|재보증") & (df["대분류"].str[0] != "E")
-E1_NAME = next(v for v in MID.values() if v.startswith("E1")); E2_NAME = next(v for v in MID.values() if v.startswith("E2"))   # 규칙 목표 유형명은 매핑에서 결정
-df.loc[r1, "중분류"] = E1_NAME; df.loc[r2, "중분류"] = E2_NAME
+RU = cfg["RULES"]
+r1 = (df["세부사업명"].fillna("").str.contains(r"\(융자\)") | df["세부지원"].fillna("").str.contains("융자")) & ~df["중분류"].str[0].isin(RU["R1_EXEMPT_PREFIXES"])
+r2 = nm.str.contains("보증|대위변제|팩토링|보험금|재보증") & (df["중분류"].str[0] != RU["R2_SKIP_PREFIX"])
+assert RU["R1_TARGET"] in MID.values() and RU["R2_TARGET"] in MID.values()
+df.loc[r1, "중분류"] = RU["R1_TARGET"]; df.loc[r2, "중분류"] = RU["R2_TARGET"]
 df["보정"] = np.where(r1, "R1 융자", np.where(r2, "R2 보증·보험", ""))
 # R3 경계 사례 수작업 조정: B(실증·상용화) 군집에 포함됐으나 목적이 인력양성·고용·경영서비스·시설인 사업 (내역사업명 기준)
 n_r3 = 0
 for mid_name, names in R3.items():
-    m3 = df["대분류"].str[0].eq("B") & df["내역사업명"].str.replace(" ", "").isin([n.replace(" ", "") for n in names])
+    m3 = df["중분류"].str[:2].isin(cfg.get("R3_SOURCE", [])) & df["내역사업명"].str.replace(" ", "").isin([n.replace(" ", "") for n in names])
     df.loc[m3, "중분류"] = mid_name; df.loc[m3, "보정"] = "R3 경계조정"; n_r3 += int(m3.sum())
 df["대분류"] = df["중분류"].str[0].map(MAJ)
 print("규칙 R3", n_r3)
+# ---- R4 잔여(미분류) 2차 배정: 잔여 접두(RESIDUAL_PREFIX) 군집에 속한 내역사업을, 차순위(비잔여) 군집 중심까지의 거리가
+#      그 군집 구성원의 평균 중심거리(자기 군집 평균 반경) 이내일 때만 해당 유형에 '저신뢰' 배정. 나머지는 미분류로 유지.
+RP = cfg.get("RESIDUAL_PREFIX"); n_r4 = 0; n_resid = int(df["중분류"].str.startswith(RP).sum()) if RP else 0
+if RP and cfg.get("SECOND_PASS", False):
+    resid_c = [c for c, v in MID.items() if v.startswith(RP)]; typed_c = [c for c in range(K) if c not in resid_c]
+    radius = {c: float(np.linalg.norm(E[lab == c] - km.cluster_centers_[c], axis=1).mean()) for c in typed_c}
+    Pm = normalize(Em.values); dist = np.linalg.norm(Pm[:, None, :] - km.cluster_centers_[None, typed_c, :], axis=2)
+    j = dist.argmin(1); near = np.array(typed_c)[j]; dmin = dist[np.arange(len(j)), j]
+    ok = pd.Series([dmin[i] <= radius[near[i]] for i in range(len(j))], index=Em.index); near_s = pd.Series(near, index=Em.index)
+    own_r = {c: float(np.linalg.norm(E[lab == c] - km.cluster_centers_[c], axis=1).mean()) for c in resid_c}
+    prog_c_s = pd.Series(prog_c, index=Em.index); alt_ok = pd.Series([dmin[i] <= own_r.get(prog_c_s.iloc[i], 0) for i in range(len(j))], index=Em.index)
+    n_r4_alt = int((df["중분류"].str.startswith(RP) & df["key"].map(alt_ok).fillna(False) & (df["보정"] == "")).sum())
+    m4 = df["중분류"].str.startswith(RP) & df["key"].map(ok).fillna(False) & (df["보정"] == "")
+    df.loc[m4, "중분류"] = df.loc[m4, "key"].map(near_s).map(MID); df.loc[m4, "보정"] = "R4 2차배정(저신뢰)"; n_r4 = int(m4.sum())
+    df["대분류"] = df["중분류"].str[0].map(MAJ)
+    print(f"잔여 {n_resid}건 중 2차 배정 {n_r4}건, 미분류 잔존 {int(df['중분류'].str.startswith(RP).sum())}건")
 print("일관배정으로 변경", n_changed_consist, "| 규칙 R1", int(r1.sum()), "R2", int(r2.sum()))
 aris = [ari(lab, KMeans(K, n_init=10, random_state=s).fit_predict(E)) for s in range(1, 11)]
 taxo = df["지원분야중분류"].fillna("NA"); m = taxo != "NA"
 g = pd.DataFrame({"k": key, "mid": df["중분류_연도별"], "maj": df["대분류_연도별"]}); g = g[g.groupby("k").k.transform("size") > 1]
-stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
+stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, n_residual_before=n_resid, n_rule_R4=n_r4, n_rule_R4_alt_ownradius=(n_r4_alt if RP and cfg.get("SECOND_PASS") else 0), n_unclassified=int(df["중분류"].str.startswith(RP).sum()) if RP else 0, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
             consist_mid=(g.groupby("k").mid.nunique() == 1).mean(), consist_maj=(g.groupby("k").maj.nunique() == 1).mean(), n_multi_year_programs=g.k.nunique())
 lab0 = KMeans(K, n_init=10, random_state=0).fit_predict(np.load("data/emb_lsa.npy")); stab["nmi_taxo_lsa"] = nmi(taxo[m], lab0[m]); stab["nmi_somewon_lsa"] = nmi(df["소관"], lab0)
 json.dump({k: (v if isinstance(v, str) else float(v)) for k, v in stab.items()}, open(f"{OUT}/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)

@@ -19,7 +19,7 @@ python scripts/03_select_k.py          # 임베딩·k별 품질지표
 python scripts/05_function_axis.py     # 지원목적(기능) 축 임베딩: 산업영역 어휘 가중 완화
 python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3      # (선택) 사전학습 문장 임베딩 + 영역 방향 제거 → data/emb_bge-m3_fn.npy
 python scripts/04b_compact_profile.py 24 fn   # 군집 프로파일(라벨링 근거)
-python scripts/07_final_typology.py    # 최종 유형 배정·집계표·안정성 지표 (기본: --emb fn --k 24 --map config/mapping_fn_k24.json)
+python scripts/07_final_typology.py --map config/mapping_fn_k24_v2.json   # 최종 유형 배정·집계표·안정성 지표 (LSA 단독)
 python scripts/08_charts.py            # 보고서 도표
 ```
 
@@ -28,13 +28,16 @@ python scripts/08_charts.py            # 보고서 도표
 동일 문서를 임베딩하고, 지원산업·소관을 판별하는 선형 방향(LDA)을 제거한 `emb_<모델>_fn.npy`를 만듭니다.
 ```bash
 python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3   # emb_bge-m3.npy, _fn(영역 제거), _hyb(영역 제거 + 기능가중 LSA 결합; 최종 사용)
-python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파일을 보고 해석 → config/mapping_bge-m3_hyb_k24.json
-python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24.json --out output_bge-m3
+python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파일을 보고 해석 → config/mapping_bge-m3_hyb_k24_v2.json
+python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v2.json --out output_bge-m3
 python scripts/08_charts.py --emb bge-m3_hyb --out output_bge-m3
 python scripts/09_compare_embeddings.py --a fn --b bge-m3_hyb --out-b output_bge-m3   # LSA 단독 결과와 비교
 ```
 결합 임베딩(`_hyb`)을 쓰는 이유: 문장 임베딩 단독은 산업영역 의존(소관 NMI 0.35)이 크고 연도 간 일치율(0.71)이 낮으며, 기능가중 LSA와 결합하면 일치율 0.83, 기존 분류 정합성 0.41로 모든 지표가 개선됨.
-군집 번호는 임베딩마다 달라지므로 매핑 파일(군집 번호 → 중분류·대분류, 경계 조정 목록)은 새로 작성해야 합니다. 형식은 `config/mapping_fn_k24.json` 참조.
+군집 번호는 임베딩마다 달라지므로 매핑 파일은 새로 작성해야 합니다. 형식은 `config/mapping_bge-m3_hyb_k24_v2.json` 참조.
+- `MID` 군집 번호 → 중분류명(첫 글자가 대분류 부호), `MAJ` 대분류 부호 → 명칭, `R3`/`R3_SOURCE` 경계 사례 수작업 조정, `RULES` 융자·보증 보정규칙의 목표 유형
+- `RESIDUAL_PREFIX`(기본 Z) 로 시작하는 중분류는 '미분류'로 취급. `SECOND_PASS: true` 이면 차순위 유형 군집 중심까지의 거리가 그 군집 평균 반경 이내인 사업만 저신뢰(R4) 배정
+- v1 매핑(`mapping_*_k24.json`)은 기술개발·실증을 분리하고 복합 유형을 두었던 개정 전 체계
 
 실행 환경 요건 (Claude Code 클라우드 환경의 경우 환경 설정 → Network access에서 허용):
 - sentence-transformers: `huggingface.co`(메타데이터)와 가중치 CDN `us.aws.cdn.hf.co`(2026년 10월 현재 리다이렉트 대상; 가능하면 `*.hf.co` 전체 허용). 모델 약 2.3GB, CPU 4코어 기준 2,189건 추론 약 15~30분. 스크립트가 `HF_HUB_DISABLE_XET=1`을 기본 설정하므로 `cas-server.xethub.hf.co`는 불필요
