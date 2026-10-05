@@ -1,4 +1,6 @@
 {
+ "emb": "fn",
+ "k": 24.0,
  "n_changed_by_program_consistency": 150.0,
  "n_rule_R1": 52.0,
  "n_rule_R2": 6.0,

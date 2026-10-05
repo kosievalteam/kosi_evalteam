@@ -4,7 +4,7 @@
   python scripts/02b_embed_pretrained.py --backend st --model intfloat/multilingual-e5-large
   python scripts/02b_embed_pretrained.py --backend openai --model text-embedding-3-large  # OPENAI_API_KEY 필요
   python scripts/02b_embed_pretrained.py --from-npy data/emb_w2v.npy                       # 기존 임베딩에 영역 방향 제거만 적용
-출력: data/emb_<name>.npy (원 임베딩), data/emb_<name>_fn.npy (산업영역 방향 제거본)
+출력: data/emb_<name>.npy (원 임베딩), data/emb_<name>_fn.npy (산업영역 방향 제거본), data/emb_<name>_hyb.npy (영역 제거본 + 기능가중 LSA 결합; 최종 사용)
   <name> = 모델명의 마지막 경로 요소 소문자 (예: bge-m3, multilingual-e5-large, text-embedding-3-large)
 필요 네트워크: st → huggingface.co, us.aws.cdn.hf.co (가중치 CDN; *.hf.co 허용 권장) / openai → api.openai.com
   ※ huggingface_hub 의 Xet 백엔드(cas-server.xethub.hf.co)가 막힌 환경에서는 HF_HUB_DISABLE_XET=1 로 실행 (아래에서 기본 설정)
@@ -18,6 +18,8 @@ ap.add_argument("--model", default="BAAI/bge-m3")
 ap.add_argument("--batch", type=int, default=16)
 ap.add_argument("--max-chars", type=int, default=1500)
 ap.add_argument("--domain-dims", type=int, default=12, help="제거할 산업영역 판별 방향 수")
+ap.add_argument("--hybrid-with", default="fn", help="영역 제거본과 결합할 어휘 임베딩 이름(data/emb_<이름>.npy, 기본 fn). 빈 문자열이면 생략")
+ap.add_argument("--hybrid-weight", type=float, default=1.0)
 ap.add_argument("--from-npy", default=None, help="이미 계산된 임베딩(.npy)에 영역 방향 제거만 적용 (모델 호출 생략)")
 args = ap.parse_args()
 name = os.path.basename(args.from_npy).replace("emb_", "").replace(".npy", "") if args.from_npy else args.model.split("/")[-1].lower()
@@ -58,3 +60,8 @@ W = lda.scalings_[:, : lda.n_components]; Q, _ = np.linalg.qr(W)          # 영�
 Efn = normalize(E - (E @ Q) @ Q.T); np.save(f"data/emb_{name}_fn.npy", Efn)
 json.dump(dict(model=args.model, backend=args.backend, dim=int(E.shape[1]), domain_dims=int(Q.shape[1])), open(f"data/emb_{name}_meta.json", "w"), ensure_ascii=False, indent=1)
 print("saved", f"data/emb_{name}_fn.npy", "(영역 방향", Q.shape[1], "개 제거)")
+# ---- 하이브리드: 영역 제거 문장 임베딩 + 기능어휘 가중 LSA(05_function_axis.py 산출) 결합 → 의미 정보와 지원수단 어휘 정보를 함께 반영
+if args.hybrid_with and os.path.exists(f"data/emb_{args.hybrid_with}.npy"):
+    L = np.load(f"data/emb_{args.hybrid_with}.npy").astype(np.float32)
+    H = normalize(np.hstack([Efn.astype(np.float32), args.hybrid_weight * L])); np.save(f"data/emb_{name}_hyb.npy", H)
+    print("saved", f"data/emb_{name}_hyb.npy", H.shape, f"(= [{name}_fn | {args.hybrid_weight}×{args.hybrid_with}])")

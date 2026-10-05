@@ -26,7 +26,8 @@ n_changed_consist = int((df["중분류"] != df["중분류_연도별"]).sum())
 nm = df["세부사업명"].fillna("") + " " + df["내역사업명"].fillna("")
 r1 = (df["세부사업명"].fillna("").str.contains(r"\(융자\)") | df["세부지원"].fillna("").str.contains("융자")) & ~df["대분류"].str[0].isin(list("CDEF"))
 r2 = nm.str.contains("보증|대위변제|팩토링|보험금|재보증") & (df["대분류"].str[0] != "E")
-df.loc[r1, "중분류"] = "E1 정책자금 융자(운전·시설)"; df.loc[r2, "중분류"] = "E2 투자·보증·자금조달 지원"
+E1_NAME = next(v for v in MID.values() if v.startswith("E1")); E2_NAME = next(v for v in MID.values() if v.startswith("E2"))   # 규칙 목표 유형명은 매핑에서 결정
+df.loc[r1, "중분류"] = E1_NAME; df.loc[r2, "중분류"] = E2_NAME
 df["보정"] = np.where(r1, "R1 융자", np.where(r2, "R2 보증·보험", ""))
 # R3 경계 사례 수작업 조정: B(실증·상용화) 군집에 포함됐으나 목적이 인력양성·고용·경영서비스·시설인 사업 (내역사업명 기준)
 n_r3 = 0
@@ -42,7 +43,7 @@ g = pd.DataFrame({"k": key, "mid": df["중분류_연도별"], "maj": df["대분�
 stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
             consist_mid=(g.groupby("k").mid.nunique() == 1).mean(), consist_maj=(g.groupby("k").maj.nunique() == 1).mean(), n_multi_year_programs=g.k.nunique())
 lab0 = KMeans(K, n_init=10, random_state=0).fit_predict(np.load("data/emb_lsa.npy")); stab["nmi_taxo_lsa"] = nmi(taxo[m], lab0[m]); stab["nmi_somewon_lsa"] = nmi(df["소관"], lab0)
-json.dump({k: float(v) for k, v in stab.items()}, open(f"{OUT}/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)
+json.dump({k: (v if isinstance(v, str) else float(v)) for k, v in stab.items()}, open(f"{OUT}/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)
 yrs = [2024, 2025, 2026]
 def agg(by):
     n = df.pivot_table(index=by, columns="year", values="id", aggfunc="count").reindex(columns=yrs).fillna(0).astype(int)

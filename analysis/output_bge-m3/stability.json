@@ -1,0 +1,18 @@
+{
+ "emb": "bge-m3_hyb",
+ "k": 24.0,
+ "n_changed_by_program_consistency": 123.0,
+ "n_rule_R1": 44.0,
+ "n_rule_R2": 6.0,
+ "n_rule_R3": 0.0,
+ "ari_mean": 0.3997867452436493,
+ "ari_min": 0.33335001320246754,
+ "silhouette": 0.05809522792696953,
+ "nmi_taxo": 0.4088949476092757,
+ "nmi_somewon": 0.23232348482569745,
+ "consist_mid": 0.8070796460176991,
+ "consist_maj": 0.8407079646017699,
+ "n_multi_year_programs": 565.0,
+ "nmi_taxo_lsa": 0.3599234719004458,
+ "nmi_somewon_lsa": 0.38338625329199744
+}

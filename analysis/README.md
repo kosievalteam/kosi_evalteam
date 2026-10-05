@@ -27,11 +27,13 @@ python scripts/08_charts.py            # 보고서 도표
 `02b_embed_pretrained.py`는 bge-m3·multilingual-e5(sentence-transformers, 로컬 추론) 또는 OpenAI text-embedding-3(API)로
 동일 문서를 임베딩하고, 지원산업·소관을 판별하는 선형 방향(LDA)을 제거한 `emb_<모델>_fn.npy`를 만듭니다.
 ```bash
-python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3
-python scripts/04b_compact_profile.py 24 bge-m3_fn            # 군집 프로파일을 보고 해석 → config/mapping_<모델>_k24.json 작성
-python scripts/07_final_typology.py --emb bge-m3_fn --k 24 --map config/mapping_bge-m3_k24.json --out output_bge-m3
-python scripts/08_charts.py --emb bge-m3_fn --out output_bge-m3
+python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3   # emb_bge-m3.npy, _fn(영역 제거), _hyb(영역 제거 + 기능가중 LSA 결합; 최종 사용)
+python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파일을 보고 해석 → config/mapping_bge-m3_hyb_k24.json
+python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24.json --out output_bge-m3
+python scripts/08_charts.py --emb bge-m3_hyb --out output_bge-m3
+python scripts/09_compare_embeddings.py --a fn --b bge-m3_hyb --out-b output_bge-m3   # LSA 단독 결과와 비교
 ```
+결합 임베딩(`_hyb`)을 쓰는 이유: 문장 임베딩 단독은 산업영역 의존(소관 NMI 0.35)이 크고 연도 간 일치율(0.71)이 낮으며, 기능가중 LSA와 결합하면 일치율 0.83, 기존 분류 정합성 0.41로 모든 지표가 개선됨.
 군집 번호는 임베딩마다 달라지므로 매핑 파일(군집 번호 → 중분류·대분류, 경계 조정 목록)은 새로 작성해야 합니다. 형식은 `config/mapping_fn_k24.json` 참조.
 
 실행 환경 요건 (Claude Code 클라우드 환경의 경우 환경 설정 → Network access에서 허용):
@@ -49,8 +51,9 @@ from biz where gubun='중앙부처' and year between 2024 and 2026 order by id;
 ## 산출물
 | 파일 | 내용 |
 |---|---|
-| `REPORT.md` | 개조식 분석 보고서 |
-| `output/T1_major_by_year.csv` | 대분류별 건수·예산(2024~2026) |
+| `REPORT.md` | 개조식 분석 보고서 (본 결과: bge-m3 결합 임베딩, 비교: LSA 단독) |
+| `output_bge-m3/` | **본 결과**: bge-m3 결합 임베딩 기반 집계표·도표·지표·LSA 비교표 |
+| `output/T1_major_by_year.csv` | (LSA 단독) 대분류별 건수·예산(2024~2026) |
 | `output/T2_mid_by_year.csv` | 중분류별 건수·예산 |
 | `output/T3_somewon_x_major_2026.csv` | 소관 × 유형 (2026 예산) |
 | `output/T4_taxonomy_x_major.csv` | 기존 지원분야중분류 × 유형 교차표 |
