@@ -74,6 +74,12 @@ else:
     cfg = json.load(open(args.map))
     for ax in AX:
         M = {int(k): v for k, v in cfg[ax].items()}; A[f"{ax}_type"] = A[f"{ax}_cp"].map(M); assert A[f"{ax}_type"].notna().all(), ax
+    # 대상 축 보정규칙: 수혜대상 서술의 명시 어휘로 유형 세분(예: 보증·보험 이용기업), 프로그램 단위 최빈값으로 통일
+    for ov in cfg.get("target_overlays", []):
+        m = A["target_type"].str.startswith(ov["from"] + " ") & A["수혜대상"].fillna("").str.contains(ov["regex"])
+        A.loc[m, "target_type"] = ov["type"]
+    if cfg.get("target_overlays"):
+        ks = pd.Series(key.values, index=A.index); A["target_type"] = ks.map(A.groupby(ks.values)["target_type"].agg(lambda x: x.value_counts().index[0])).values
     # ---- 수단 축: 지원형태 메타데이터 + 어휘 신호의 우선순위 규칙 (범주형 속성이므로 군집 대신 규칙으로 유형화)
     def instr(i):
         m = meta[i]; f = F.loc[i]; pur = str(A.loc[i, "대분류"])[:1]

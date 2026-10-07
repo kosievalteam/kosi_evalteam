@@ -18,6 +18,7 @@ python scripts/00_parse_mcp_dump.py <execute_sql 결과파일> data/biz_central_
 python scripts/01_build_corpus.py      # 문서 구성 + 형태소(kiwipiepy) 토큰화
 python scripts/02_embed.py             # TF-IDF→LSA / 단어벡터 / 결합 임베딩
 python scripts/03_select_k.py          # 임베딩·k별 품질지표
+python scripts/03_select_k.py bge-m3_hyb,bge-m3_fn output_bge-m3/k_selection.csv   # (bge 임베딩 생성 후) k 선정 근거
 python scripts/05_function_axis.py     # 지원목적(기능) 축 임베딩: 산업영역 어휘 가중 완화
 python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3      # (선택) 사전학습 문장 임베딩 + 영역 방향 제거 → data/emb_bge-m3_fn.npy
 python scripts/04b_compact_profile.py 24 fn   # 군집 프로파일(라벨링 근거)
