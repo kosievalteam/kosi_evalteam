@@ -3,7 +3,7 @@
  "target_silhouette_type": 0.147,
  "target_ARI_seeds": 0.616,
  "target_NMI_소관": 0.378,
- "target_NMI_지원목적대분류": 0.226,
+ "target_NMI_지원목적대분류": 0.227,
  "target_NMI_지원분야소분류(연계분)": 0.133,
  "target_연도간일치율(유형)": 0.835,
  "target_유형응집도(타중심최소거리/자기평균거리)": {
@@ -25,7 +25,7 @@
  "content_silhouette_type": 0.017,
  "content_ARI_seeds": 0.488,
  "content_NMI_소관": 0.21,
- "content_NMI_지원목적대분류": 0.353,
+ "content_NMI_지원목적대분류": 0.359,
  "content_NMI_지원분야소분류(연계분)": 0.074,
  "content_연도간일치율(유형)": 0.618,
  "content_유형응집도(타중심최소거리/자기평균거리)": {
@@ -45,7 +45,7 @@
  "content_병합군집쌍 중심거리 평균": 0.548,
  "content_비병합군집쌍 중심거리 평균": 0.516,
  "instrument_NMI_소관": 0.185,
- "instrument_NMI_지원목적대분류": 0.292,
+ "instrument_NMI_지원목적대분류": 0.277,
  "instrument_NMI_지원형태메타": 0.662,
  "instrument_어휘신호로 세분된 비율(I5·I8·I9)": 0.062
 }

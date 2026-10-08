@@ -1,0 +1,65 @@
+{
+ "n_target_rows": 265,
+ "n_target_programs": 164,
+ "cv": {
+  "내용문서": {
+   "acc_mid": 0.68,
+   "acc_maj": 0.83,
+   "acc_maj_content_docs": 0.827,
+   "acc_maj_hiconf": 0.94,
+   "share_hiconf": 0.45
+  },
+  "내용문서+내용축": {
+   "acc_mid": 0.718,
+   "acc_maj": 0.847,
+   "acc_maj_content_docs": 0.848,
+   "acc_maj_hiconf": 0.925,
+   "share_hiconf": 0.592
+  },
+  "목적결합": {
+   "acc_mid": 0.904,
+   "acc_maj": 0.94,
+   "acc_maj_content_docs": 0.942,
+   "acc_maj_hiconf": 0.969,
+   "share_hiconf": 0.798
+  },
+  "내용문서+내용축+목적결합": {
+   "acc_mid": 0.881,
+   "acc_maj": 0.93,
+   "acc_maj_content_docs": 0.93,
+   "acc_maj_hiconf": 0.966,
+   "share_hiconf": 0.807
+  }
+ },
+ "chosen": "내용문서+내용축+목적결합",
+ "n_rule_programs": 2,
+ "share_hiconf_rows": 0.162,
+ "src_dist": {
+  "산출근거": 115,
+  "목적(대체)": 87,
+  "공고+산출근거": 38,
+  "공고": 25
+ },
+ "lsa_typed_rows": 120,
+ "lsa_agree_maj": 0.617,
+ "maj_dist_rows": {
+  "A": 96,
+  "C": 67,
+  "H": 46,
+  "B": 21,
+  "D": 16,
+  "E": 9,
+  "F": 5,
+  "G": 5
+ },
+ "maj_dist_budget2026": {
+  "A": 219415.0,
+  "B": 33383.0,
+  "C": 143834.0,
+  "D": 601348.0,
+  "E": 19228.0,
+  "F": 44138.0,
+  "G": 18827.0,
+  "H": 142636.0
+ }
+}

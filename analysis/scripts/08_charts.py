@@ -23,7 +23,7 @@ for yi, v in zip(y, piv[2026]): ax.text(v + 0.08, yi + h, f"{v:.2f}", va="center
 ax.set_yticks(y); ax.set_yticklabels(piv.index, fontsize=9.5); ax.xaxis.grid(True, color=GRID, zorder=0); ax.set_axisbelow(True)
 ax.set_xlabel("내역사업 예산 합계(조원)", fontsize=9.5)
 fig.text(0.01, 0.975, "지원목적 유형별 중앙부처 내역사업 예산, 2024~2026", fontsize=12, fontweight="bold", color=TXT, va="top")
-fig.text(0.01, 0.935, f"값 표시는 2026년. 자료: 정책평가팀 DB(중앙부처 내역사업 2,189건) 기준 유형 배정, 목적 서술 불충분 {n_ex}건은 제외", fontsize=8.5, color=TXT2, va="top")
+fig.text(0.01, 0.935, (f"값 표시는 2026년. 자료: 정책평가팀 DB(중앙부처 내역사업 2,189건) 기준 유형 배정, 목적 서술 불충분 {n_ex}건은 제외" if n_ex else "값 표시는 2026년. 자료: 정책평가팀 DB(중앙부처 내역사업 2,189건) 전수 유형 배정(목적 서술 불충분 사업은 지원내용 기반 배정)"), fontsize=8.5, color=TXT2, va="top")
 ax.legend(frameon=False, fontsize=9, loc="lower right", title="연도", title_fontsize=9); fig.tight_layout(rect=(0, 0, 1, 0.91)); fig.savefig(f"{OUT}/fig1_budget_by_type.png"); plt.close(fig)
 # ---- 그림2: 2차원 지도(t-SNE) 소다중 — 패널마다 해당 유형만 강조
 from sklearn.manifold import TSNE

@@ -6,6 +6,7 @@
 ## 자료
 - 선행 작업: 열린재정(재정정보공개시스템)의 세부사업별 「예산 및 기금운용계획 사업설명자료」(hwpx)를 전수 수집(연 7,400~8,100개 세부사업)하고
   중소기업 지원사업(연 400~470개 세부사업)을 선별한 뒤 서술 항목·내역 구조를 파싱하여 내역사업 단위 DB로 구축. 기업마당 공고·정책디렉토리 속성을 연계(REPORT.md Ⅰ장)
+- 예산 산출근거(`biz.내역산출근거`)는 `data/biz_calc_2024_2026.csv`로 추출(00_parse_mcp_dump.py)
 - 원천: 정책평가팀 Supabase DB(`biz`, `biz_struct`, `gonggo`, `biz_sunset`, `biz_transfer` 테이블) — 이 중 중앙부처, 2024~2026년, 내역사업 2,189건 사용
   (biz_info 웹앱 <https://kosievalteam.github.io/biz_info/> 과 동일한 자료)
 - 자료 파일(`data/`)과 행 단위 결과(`output/*.csv`, `*.xlsx`)는 **git에 올리지 않습니다**(.gitignore). 집계표·지표·보고서만 커밋합니다.
@@ -33,6 +34,8 @@ python scripts/08_charts.py            # 보고서 도표
 python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3   # emb_bge-m3.npy, _fn(영역 제거), _hyb(영역 제거 + 기능가중 LSA 결합; 최종 사용)
 python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파일을 보고 해석 → config/mapping_bge-m3_hyb_k24_v3.json
 python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v3.json --out output_bge-m3
+python scripts/10_content_assign.py   # 목적 서술 불충분(잔여) 사업을 지원내용 문서(공고+산출근거)로 분류 → data/content_assign_bge-m3.csv
+python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v4.json --out output_bge-m3   # 지원내용 기반 배정 반영(전수 유형화)
 python scripts/08_charts.py --emb bge-m3_hyb --out output_bge-m3
 python scripts/09_compare_embeddings.py --a fn --b bge-m3_hyb --out-b output_bge-m3   # LSA 단독 결과와 비교
 python scripts/11_axis_typology.py profile --k_target 16   # 대상·내용 축 군집 프로파일 → config/axes_mapping.json 작성

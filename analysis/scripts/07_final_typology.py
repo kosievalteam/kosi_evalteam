@@ -53,11 +53,19 @@ if RP and cfg.get("SECOND_PASS", False):
     df.loc[m4, "중분류"] = df.loc[m4, "key"].map(near_s).map(MID); df.loc[m4, "보정"] = "R4 2차배정(저신뢰)"; n_r4 = int(m4.sum())
     df["대분류"] = df["중분류"].str[0].map(MAJ)
     print(f"잔여 {n_resid}건 중 2차 배정 {n_r4}건, 미분류 잔존 {int(df['중분류'].str.startswith(RP).sum())}건")
+# ---- R5 지원내용 기반 배정: 2차 배정 후에도 남은 잔여 사업을 지원내용 문서 분류 결과(10_content_assign.py)로 유형화
+CA = cfg.get("CONTENT_ASSIGN"); n_r5 = 0
+if RP and CA and os.path.exists(CA):
+    ca = pd.read_csv(CA).set_index("key")
+    m5 = df["중분류"].str.startswith(RP) & df["key"].isin(ca.index)
+    df.loc[m5, "중분류"] = df.loc[m5, "key"].map(ca["중분류"]); df.loc[m5, "보정"] = "R5 " + df.loc[m5, "key"].map(ca["신뢰"])
+    n_r5 = int(m5.sum()); df["대분류"] = df["중분류"].str[0].map(MAJ)
+    print(f"지원내용 기반 배정 {n_r5}건, 잔여 {int(df['중분류'].str.startswith(RP).sum())}건")
 print("일관배정으로 변경", n_changed_consist, "| 규칙 R1", int(r1.sum()), "R2", int(r2.sum()))
 aris = [ari(lab, KMeans(K, n_init=10, random_state=s).fit_predict(E)) for s in range(1, 11)]
 taxo = df["지원분야중분류"].fillna("NA"); m = taxo != "NA"
 g = pd.DataFrame({"k": key, "mid": df["중분류_연도별"], "maj": df["대분류_연도별"]}); g = g[g.groupby("k").k.transform("size") > 1]
-stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, n_residual_before=n_resid, n_rule_R4=n_r4, n_rule_R4_alt_ownradius=(n_r4_alt if RP and cfg.get("SECOND_PASS") else 0), n_unclassified=int(df["중분류"].str.startswith(RP).sum()) if RP else 0, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
+stab = dict(emb=EMB, k=K, n_changed_by_program_consistency=n_changed_consist, n_rule_R1=int(r1.sum()), n_rule_R2=int(r2.sum()), n_rule_R3=n_r3, n_residual_before=n_resid, n_rule_R4=n_r4, n_rule_R5=n_r5, n_rule_R4_alt_ownradius=(n_r4_alt if RP and cfg.get("SECOND_PASS") else 0), n_unclassified=int(df["중분류"].str.startswith(RP).sum()) if RP else 0, ari_mean=np.mean(aris), ari_min=np.min(aris), silhouette=silhouette_score(E, lab), nmi_taxo=nmi(taxo[m], lab[m]), nmi_somewon=nmi(df["소관"], lab),
             consist_mid=(g.groupby("k").mid.nunique() == 1).mean(), consist_maj=(g.groupby("k").maj.nunique() == 1).mean(), n_multi_year_programs=g.k.nunique())
 lab0 = KMeans(K, n_init=10, random_state=0).fit_predict(np.load("data/emb_lsa.npy")); stab["nmi_taxo_lsa"] = nmi(taxo[m], lab0[m]); stab["nmi_somewon_lsa"] = nmi(df["소관"], lab0)
 json.dump({k: (v if isinstance(v, str) else float(v)) for k, v in stab.items()}, open(f"{OUT}/stability.json", "w"), indent=1, ensure_ascii=False); print(stab)
@@ -69,6 +77,11 @@ T0 = pd.DataFrame({"유형화 제외 건수": df[EXCL].groupby("year").size().re
                    "전체 예산(백만원)": df.groupby("year").내역예산.sum().reindex(yrs).round(0)})
 T0["건수 비중(%)"] = (T0["유형화 제외 건수"] / T0["전체 건수"] * 100).round(1); T0["예산 비중(%)"] = (T0["유형화 제외 예산(백만원)"] / T0["전체 예산(백만원)"] * 100).round(1)
 T0.to_csv(f"{OUT}/T0_excluded_by_year.csv", encoding="utf-8-sig")
+R5m = df["보정"].fillna("").str.startswith("R5")
+T0c = pd.DataFrame({"내용기반 배정 건수": df[R5m].groupby("year").size().reindex(yrs).fillna(0).astype(int), "전체 건수": df.groupby("year").size().reindex(yrs),
+                    "내용기반 배정 예산(백만원)": df[R5m].groupby("year").내역예산.sum().reindex(yrs).fillna(0).round(0), "전체 예산(백만원)": df.groupby("year").내역예산.sum().reindex(yrs).round(0)})
+T0c["건수 비중(%)"] = (T0c["내용기반 배정 건수"] / T0c["전체 건수"] * 100).round(1); T0c["예산 비중(%)"] = (T0c["내용기반 배정 예산(백만원)"] / T0c["전체 예산(백만원)"] * 100).round(1)
+T0c.to_csv(f"{OUT}/T0c_content_assigned_by_year.csv", encoding="utf-8-sig")
 def agg(by):
     n = dt.pivot_table(index=by, columns="year", values="id", aggfunc="count").reindex(columns=yrs).fillna(0).astype(int)
     b = dt.pivot_table(index=by, columns="year", values="내역예산", aggfunc="sum").reindex(columns=yrs).fillna(0).round(0)
