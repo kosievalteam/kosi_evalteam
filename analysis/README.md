@@ -42,6 +42,7 @@ python scripts/11_axis_typology.py profile --k_target 16   # 대상·내용 축 
 python scripts/11_axis_typology.py final --k_target 16     # 대상·수단·내용 유형 확정, X1~X8 집계표
 python scripts/12_axis_charts.py                           # 4축 도표(fig5, fig6)
 python scripts/13_axis_detail.py                           # 축별 상세 집계(Y1~Y8, axes_stability.json): 하위군집·추이·소관별·대표사업·타당성
+python scripts/14_industry_axis.py                         # 다섯째 축 지원산업(산업 사전 config/industry_dict.json) + AI 관여도, S1~S8 집계·fig7
 ```
 결합 임베딩(`_hyb`)을 쓰는 이유: 문장 임베딩 단독은 산업영역 의존(소관 NMI 0.35)이 크고 연도 간 일치율(0.71)이 낮으며, 기능가중 LSA와 결합하면 일치율 0.83, 기존 분류 정합성 0.41로 모든 지표가 개선됨.
 군집 번호는 임베딩마다 달라지므로 매핑 파일은 새로 작성해야 합니다. 형식은 `config/mapping_bge-m3_hyb_k24_v3.json` 참조.
