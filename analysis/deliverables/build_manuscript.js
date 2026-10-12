@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, ImageRun, PageBreak, LevelFormat, BorderStyle, ShadingType, VerticalAlign, TabStopType, Footer, PageNumber } = require("docx");
+const DEF = require("./defs_data");
 const IMG = "/home/user/kosi_evalteam/analysis/output_bge-m3/";
 const D = "KoPub돋움체", B = "KoPub바탕체";
 const TEAL = "1D6B6B", LIGHT = "E8F3F1", HEAD = "2F6F7E";
@@ -27,6 +28,18 @@ function TBL(headers, rows, widths, o = {}) {
     rows: [new TableRow({ tableHeader: true, children: headers.map((h, i) => cell(h, widths[i], true, i)) }), ...rows.map(r => new TableRow({ children: r.map((c, i) => cell(c, widths[i], false, i)) }))] });
 }
 const BR = () => new Paragraph({ children: [new PageBreak()] });
+// 줄바꿈·행 음영을 지원하는 정의표(부록 3)
+function TBLX(headers, rows, widths, o = {}) {
+  const total = widths.reduce((a, b) => a + b, 0);
+  const cell = (text, w, hdr, i, shade) => new TableCell({ width: { size: w, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
+    shading: hdr ? { type: ShadingType.CLEAR, fill: HEAD, color: "auto" } : (shade || (i === 0 && o.firstColShade) ? { type: ShadingType.CLEAR, fill: LIGHT, color: "auto" } : undefined),
+    margins: { top: 40, bottom: 40, left: 80, right: 80 }, borders: { top: border, bottom: border, left: border, right: border },
+    children: String(text).split("\n").map(line => new Paragraph({ alignment: hdr || (o.center || []).includes(i) ? AlignmentType.CENTER : AlignmentType.LEFT, spacing: { before: 0, after: 0, line: 240 },
+      children: [t(line, { font: D, size: o.size || 16, bold: hdr || (i === 0) || !!shade, color: hdr ? "FFFFFF" : undefined })] })) });
+  return new Table({ width: { size: total, type: WidthType.DXA }, columnWidths: widths, alignment: AlignmentType.CENTER,
+    rows: [new TableRow({ tableHeader: true, children: headers.map((h, i) => cell(h, widths[i], true, i)) }),
+      ...rows.map(r => new TableRow({ cantSplit: true, children: r.cells.map((c, i) => cell(c, widths[i], false, i, r.shade)) }))] });
+}
 // ---------- numbering ----------
 const numbering = { config: [{ reference: "kosi", levels: [
   { level: 0, format: LevelFormat.BULLET, text: "◆", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 360 } }, run: { color: TEAL, bold: true } } },
@@ -53,7 +66,7 @@ const cover = [
   BR(),
 ];
 const toc = [SEC("목 차"),
-  ...["1. 서론", "2. 중소기업 지원사업 정보 DB 구축", "3. 지원목적 유형 체계", "4. 유형별 지원 규모와 추이", "5. 지원대상·지원수단·지원내용·지원산업 유형", "6. 소관별 구조와 기존 분류체계 비교", "7. 시사점 및 정책과제", "부록 1. 축별 유형화 방법과 타당성", "부록 2. 사업정보 DB의 주요 항목과 출처"].map(s => P(s, { font: D, size: 26, bold: true, spacing: sp(0, 120) })),
+  ...["1. 서론", "2. 중소기업 지원사업 정보 DB 구축", "3. 지원목적 유형 체계", "4. 유형별 지원 규모와 추이", "5. 지원대상·지원수단·지원내용·지원산업 유형", "6. 소관별 구조와 기존 분류체계 비교", "7. 시사점 및 정책과제", "부록 1. 축별 유형화 방법과 타당성", "부록 2. 사업정보 DB의 주요 항목과 출처", "부록 3. 6축 유형 정의"].map(s => P(s, { font: D, size: 26, bold: true, spacing: sp(0, 120) })),
 ];
 const summary = [SEC("요 약"),
   HB("배경 및 목적"),
@@ -158,7 +171,7 @@ const sec2 = [H1("03", "지원목적 유형 체계"), H2("가. 유형 도출 절
     ["G. 고용 창출·유지 및 노동환경 개선", "G1 고용 창출·유지(고용장려금) / G2 산업안전·근로자 건강 보호 / G3 재직자·사업주 직업훈련 지원", "청년일자리도약장려금(고용부, 9,080억원), 안전동행지원사업(3,320억원), 일반훈련(2,102억원)"],
     ["H. 경영역량 강화·사업화 지원(컨설팅·마케팅·디자인)", "H1 컨설팅·교육·마케팅 지원 / H2 디자인 혁신 지원", "희망리턴패키지(중기부, 3,056억원), 스마트제조지원(980억원), 사업전환촉진(668억원)"],
   ].map(r => r.map(c => c.replace(/\n/g, " "))), [2000, 4200, 3100], { leftAlign: true, size: 17, firstColShade: true }),
-  ...NOTE(["* 주: 1) 대분류 부호 A~H, 중분류 부호는 대분류 부호+일련번호", "     2) 대표 사업은 해당 유형의 2026년 내역예산 상위 사업"]),
+  ...NOTE(["* 주: 1) 대분류 부호 A~H, 중분류 부호는 대분류 부호+일련번호", "     2) 대표 사업은 해당 유형의 2026년 내역예산 상위 사업", "     3) 중분류별 정의와 판정 기준은 부록 3 참조"]),
   L(0, "어휘 기반 유형화에서 분리되지 않던 기술사업화·보증·직업훈련·산업안전이 독립 유형으로 식별됨"),
   L(1, "기존 분류 '기술사업화/이전/지도' 210건 중 99건이 실증·사업화 단계(A8~A9)로 배정"),
   H2("다. 지원내용 기반 배정 사업"),
@@ -220,7 +233,7 @@ const sec4b = [H1("05", "지원대상·지원수단·지원내용·지원산업 
   L(0, "지원목적에 더해 지원대상·지원수단·지원내용·지원산업을 각각 독립적으로 유형화하여, 사업을 '누구에게(대상)·무엇을(내용)·어떤 방식으로(수단)·왜(목적)·어느 기술·산업 영역에(산업)' 지원하는지의 5축으로 기술"),
   L(1, "(방법) 지원대상·지원내용은 지원목적과 같은 임베딩·군집·해석적 병합, 지원수단은 지원형태 메타데이터의 우선순위 규칙, 지원산업은 산업 사전 규칙으로 유형화하고, 동일 내역사업은 연도 간 단일 유형으로 배정하여 2,189건 전체를 유형화"),
   L(1, "(타당성) 연도별 텍스트만으로의 유형 일치율은 대상 83.5%·수단 78.6%·내용 61.8%이며, 지원산업은 문장 임베딩상 가까운 사업끼리 같은 산업으로 묶이는 비율이 67.5%(무작위 20.6%)로 의미적 정합성을 확인"),
-  L(4, "축별 세부 방법, 군집 품질(실루엣·재군집 ARI), 소관·지원목적과의 정보량 등 타당성 지표는 부록 1 참조"),
+  L(4, "축별 세부 방법, 군집 품질(실루엣·재군집 ARI), 소관·지원목적과의 정보량 등 타당성 지표는 부록 1, 축별 유형 정의와 판정 기준은 부록 3 참조"),
   H2("나. 지원대상 유형"),
   L(0, "지원대상은 기업 계층형 4개(중소·중견기업 일반 → 요건·단계 특정 기업 → 예비창업자·창업기업, 소상공인), 비기업 주체형 4개(산학연 연구수행기관, 사업주·근로자, 농어업인·농식품, 일반 국민·종사자), 매개형 2개(수요·제도 연계 사업체, 보증·보험 이용기업)로 구조화"),
   L(1, "2026년 예산 기준 중소·중견기업 일반(T1) 24.0%(7.44조원, 119건), 소상공인(T4) 15.4%(4.78조원, 26건), 산학연 연구수행기관(T5) 15.3%(4.75조원, 158건으로 건수 최다), 보증·보험 이용기업(T10) 13.3%(4.12조원, 7건), 요건·단계 특정 기업(T2) 8.8%, 사업주·근로자(T6) 7.1%, 수요·제도 연계 사업체(T8) 6.5%, 농어업인·농식품(T9) 2.6%, 일반 국민·종사자(T7) 2.4%, 예비창업자·창업기업(T3) 2.3%"),
@@ -461,6 +474,24 @@ const appx = [SEC("부 록"),
     ["연계(분류)", "지원분야 대·중·소분류, 지원산업", "중소기업 지원사업 정책디렉토리"],
     ["연속성", "일몰·지원사업 제외·재등장·내역 전환, 세부사업 이관(원·신 세부사업)", "연도 간 대조"],
   ], [1500, 5300, 2500], { leftAlign: true, size: 17, firstColShade: true }),
+  H2("부록 3. 6축 유형 정의"),
+  L(0, "6개 축은 서로 독립적으로 판정하며, 분류 단위는 내역사업이고 동일 내역사업은 연도 간 단일 유형으로 배정"),
+  L(1, "지원목적은 '왜', 지원대상은 '누구에게', 지원수단은 '어떤 재정 방식으로', 지원내용은 '무엇을', 지원산업은 '어느 산업 영역에' 지원하는지를, AI 관여도는 사업 안에서 AI가 차지하는 위상을 구분"),
+  L(1, "원천 정보가 없으면 0번 코드(T0·I0·K0), 특정 산업을 겨냥하지 않으면 S0로 배정"),
+  L(4, "축별 판정 방법과 타당성은 부록 1, 유형별 규모는 본문 <표 4>~<표 6> 참조. 유형별 대표 사업을 포함한 전체 기준은 별책 「6축 유형 정의서」에 수록"),
+  CAP("<부표 3> 6축 분류체계 개관"),
+  TBLX(["축", "정  의", "원천 정보", "판정 방법", "유형 수"], DEF.AX.map(r => ({ cells: [`${r[0]}\n(${r[1]})`, r[2], r[3], r[4], r[5]] })), [1600, 1900, 2300, 2306, 1000], { center: [4], firstColShade: true }),
+  CAP("<부표 4> 지원목적 유형 정의"),
+  TBLX(["코드·유형명", "정  의", "판정 기준·경계"], DEF.MAJ.flatMap(([c, n, d, m]) => [{ shade: true, cells: [`${c}. ${n.replace(/\n/g, " ")}`, d, `포함 중분류: ${m}`] },
+    ...DEF.MID.filter(r => r[0][0] === c).map(([code, name, def, crit, bnd]) => ({ cells: [`${code} ${name.replace(/\n/g, " ")}`, def, `(기준) ${crit}\n(경계) ${bnd}`] }))]), [2300, 3300, 3506]),
+  ...NOTE(["* 주: 음영 행은 대분류. 보정규칙 R1(융자)·R2(보증)와 D3 내용 명시 규칙은 3장 가.·다. 참조"]),
+  ...[["<부표 5> 지원대상 유형 정의", DEF.TGT, "* 주: 예산서 수혜대상 기재 기준이며, 간접 지원 사업의 최종 수혜 기업은 추정하지 않음"],
+    ["<부표 6> 지원수단 유형 정의", DEF.INS, "* 주: 우선순위 규칙 ①융자 → ②보증·팩토링 → ③바우처 → ④직접+장려금(목적 G) → ⑤출연+보조·직접 → ⑥출연+R&D → ⑦출연 → ⑧보조 → ⑨직접 → ⑩미기재 순으로 처음 충족하는 유형에 배정"],
+    ["<부표 7> 지원내용 유형 정의", DEF.CON, "* 주: 비용을 보조하면 K7, 서비스를 기관이 현물로 제공하면 K8로 구분"],
+    ["<부표 8> 지원산업 유형 정의", DEF.IND, "* 주: 점수 = 사업명 핵심어 3점 + 본문 출현 1점씩(최대 4점) + DB 필드 일치 2점. 3점 이상이면 태그, 최고점 산업이 주 산업"],
+    ["<부표 9> AI 관여도 단계 정의", DEF.AIL, "* 주: 'AI 지원'은 핵심+활용으로 집계하고 언급은 제외. 내역사업 단위로 연도 중 최고 단계 부여"]].flatMap(([cap, rows, note]) => [CAP(cap),
+    TBLX(["코드·유형명", "정  의", "판정 기준·경계"], rows.map(([code, name, def, crit, bnd]) => ({ cells: [code === name.split(" ")[0] || /^(핵심|활용|언급|없음)$/.test(code) ? name : `${code} ${name.replace(/\n/g, " ")}`, def, `(기준) ${crit}\n(경계) ${bnd}`] })), [2300, 3300, 3506]),
+    ...NOTE([note])]),
 ];
 const refs = [SEC("참고자료"),
   ...["관계부처(각연도), 「예산 및 기금운용계획 사업설명자료」.", "기획재정부, 열린재정(재정정보공개시스템), https://www.openfiscaldata.go.kr(검색일: 2026. 10. 5).", "중소벤처기업부(각연도), 「중소기업 지원사업 정책디렉토리」.", "중소벤처기업부(각연도), 기업마당(www.bizinfo.go.kr) 지원사업 공고.", "중소벤처기업연구원 정책평가팀(2026), 「중앙부처 중소기업 지원 내역사업의 지원목적 유형화」, 분석 자료(내부).",
