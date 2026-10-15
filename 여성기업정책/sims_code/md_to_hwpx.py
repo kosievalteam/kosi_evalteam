@@ -184,7 +184,7 @@ body = []
 chap = 0; first_chap = True; tbl_counter = 0; in_ref = False
 table_titles = {"비교군은": "여성기업 확인 기업과 비교군의 특성", "SIMS 기초분석 결과": "SIMS로 본 여성기업 확인 기업과 비교군의 단계별 지표",
                 "요인별 정의": "ERIS 모델의 요인별 정의와 분석 항목", "100인 전체": "한국 여성 스타트업 대표 100인 명단(2022.8)",
-                "20개사의 창업연도": "국내 심층 사례 20개사 개요", "데카콘": "해외 벤치마크 6개사 개요", "요인별 관찰": "20개 사례의 ERIS 요인별 관찰 결과"}
+                "20개사의 창업연도": "국내 심층 사례 20개사 개요", "데카콘": "해외 벤치마크 6개사 개요", "요인별 관찰": "20개 사례의 ERIS 요인별 관찰 결과", "요인별 진단": "요인별 정책 시사점 종합"}
 last_text = ""
 for kind, pay in blocks:
     if kind == "h1":
@@ -205,6 +205,7 @@ for kind, pay in blocks:
         if "100인" in title: src = "자료: 한경 긱스·스타트업얼라이언스, 한국 여성 스타트업 대표 100인(2022.8.10); 누적 투자액은 2022년 8월 기준"
         elif "SIMS" in title or "비교군" in title: src = "자료: 중소벤처기업연구원 SIMS 기초분석(기준일 2025-12-31; 특성·비교 지표는 2026년 2월 반출본). 표준화는 비교군을 여성기업 확인 기업의 업종×법인×업력 구성으로 재가중한 값"
         elif "ERIS 모델" in title: src = "자료: Sandberg & Hofer(1987), 한정화(2003)를 토대로 작성"
+        elif "시사점" in title: src = "자료: 3장 사례 분석과 2장 SIMS 기초분석 결과를 토대로 작성"
         else: src = "자료: 각 사 공시·언론 보도를 토대로 작성"
         body.append(para(f"<표 {tbl_counter}> {title}", "tbltitle", "tbltitle"))
         body.append(table(pay, unit, src))
