@@ -21,7 +21,7 @@ const W2 = [1800, 8100]; const TOT2 = W2.reduce((a, b) => a + b, 0);
 const row = (label, paras) => new TableRow({ children: [cell(label, W2[0], { hdr: true }), cell(paras, W2[1])] });
 const t2 = new Table({ width: { size: TOT2, type: WidthType.DXA }, columnWidths: W2, rows: [
   new TableRow({ children: [cell("구  분", W2[0], { hdr: true }), cell("내       용", W2[1], { hdr: true })] }),
-  row("제목(안)", [P("중앙부처 중소기업 지원사업의 지원목적·대상·수단·내용·산업 유형 분석", { bold: true, after: 20 }), P("— 문장 임베딩 기반 유형화와 지원 구조 진단(2024~2026년)", { after: 0, size: 20 })]),
+  row("제목(안)", [P("중소기업 지원사업 유형화로 본 지원구조와 시사점", { bold: true, after: 20 }), P("— 중앙부처 내역사업의 지원목적·대상·수단·내용·산업 유형 분석(2024~2026년)", { after: 0, size: 20 })]),
   row("현안 및 배경", [
     L(0, "정책평가팀은 중소기업 지원사업 현황조사를 위해 열린재정의 세부사업별 「예산 및 기금운용계획 사업설명자료」를 전수 수집·파싱하여 사업정보 DB를 구축하였으며, 이 DB를 활용한 지원사업 구조 분석이 후속 과제"),
     L(1, "연 7,400~8,100개 세부사업 수집, 2024~2026년 중앙부처 내역사업 2,189건 구조화, 기업마당 공고 연계"),
