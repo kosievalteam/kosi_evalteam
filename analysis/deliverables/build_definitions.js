@@ -1,4 +1,4 @@
-// 중앙부처 중소기업 지원사업 6축 유형 정의서(docx) 생성. 수치·대표 사업은 output_bge-m3/definition_stats.json(scripts/15)에서 읽음
+// 중앙부처 중소기업 지원사업 유형 정의서(docx) 생성. 수치·대표 사업은 output_bge-m3/definition_stats.json(scripts/15)에서 읽음
 const fs = require("fs");
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, PageBreak, LevelFormat, BorderStyle, ShadingType, VerticalAlign, PageOrientation, Footer, PageNumber } = require("docx");
 const { AX, MAJ, MID, TGT, INS, CON, IND, AIL } = require("./defs_data");
@@ -44,7 +44,7 @@ const sumNote = (axis) => { const tot = Object.values(ST[axis]).reduce((a, s) =>
 // ---------- 표지·개요 ----------
 const cover = [
   new Paragraph({ spacing: sp(1600, 200), alignment: AlignmentType.CENTER, children: [t("중앙부처 중소기업 지원사업", { font: D, size: 40, bold: true, color: TEAL })] }),
-  new Paragraph({ spacing: sp(0, 400), alignment: AlignmentType.CENTER, children: [t("6축 유형 정의서", { font: D, size: 52, bold: true })] }),
+  new Paragraph({ spacing: sp(0, 400), alignment: AlignmentType.CENTER, children: [t("유형 정의서", { font: D, size: 52, bold: true })] }),
   new Paragraph({ spacing: sp(0, 1400), alignment: AlignmentType.CENTER, children: [t("지원목적 · 지원대상 · 지원수단 · 지원내용 · 지원산업 · AI 관여도", { font: D, size: 26, color: "444444" })] }),
   P("2026. 10.", { align: AlignmentType.CENTER, font: D, size: 24 }),
   P("중소벤처기업연구원 정책평가팀", { align: AlignmentType.CENTER, font: D, size: 26, bold: true }),
@@ -52,20 +52,20 @@ const cover = [
 ];
 const overview = [
   H1("Ⅰ. 개요"),
-  L(0, "본 정의서는 중앙부처 중소기업 지원 내역사업을 6개 축으로 분류하는 기준으로, 축별 판정 방법과 유형별 정의·판정 단서·경계를 명시하여 분류의 일관성과 재현성을 확보하기 위한 것임"),
+  L(0, "본 정의서는 중앙부처 중소기업 지원 내역사업의 유형화 기준을 정리한 것으로, 기준별 판정 방법과 유형별 정의·판정 단서·경계를 명시하여 유형화의 일관성과 재현성을 확보하기 위한 것임"),
   L(1, "(적용 단위) 예산서 내역사업. 동일 내역사업은 연도별 판정을 종합하여 연도 간 단일 유형으로 배정"),
   L(1, `(적용 범위) 2024~2026년 중앙부처 내역사업 ${ST._meta.n_all.toLocaleString()}건(23개 소관), 2026년 ${ST._meta.n}건·${ST._meta.budget_jo}조원`),
   L(1, "(활용) 사업정보 DB 등록 시 유형 기재, 사전협의·성과평가의 유사중복 검토 모집단 구성, 유형별 예산 포트폴리오 점검"),
-  L(0, "6개 축은 서로 독립적으로 판정하며, 같은 사업이라도 축마다 다른 질문에 답함"),
+  L(0, "여섯 가지 기준은 서로 독립적으로 판정하며, 같은 사업이라도 기준마다 다른 질문에 답함"),
   L(1, "지원목적은 '왜', 지원수단은 '어떤 재정 방식으로', 지원내용은 '수혜자가 무엇을 받는가'를 구분하므로, 같은 융자라도 목적에 따라 다른 목적 유형에 배정"),
   L(2, "지원수단이 같아도 사업 서술의 목적에 따라 지원목적 유형이 갈림"),
   L(3, "창업기반지원(융자)은 운전자금 성격으로 D1, 농식품글로벌육성지원자금(융자)은 수출업체 육성으로 C1, 신재생에너지 생산및시설자금(융자)은 설비 전환으로 E2"),
-  L(1, "AI 관여도는 지원산업 축의 하위 지표로 판정하나, 정책 테마 집계에 별도로 쓰이므로 독립 축으로 정의"),
-  CAP("<표 1> 6축 분류체계 개관"),
-  TBL(["축", "질  문", "정  의", "원천 정보", "판정 방법", "유형 수", "배정"], AX.map(r => ({ cells: r })), [1500, 2000, 2400, 3000, 3138, 1300, 1100], { boldFirst: true, center: [5, 6], firstColShade: true, size: 18 }),
+  L(1, "AI 관여도는 지원산업 유형화의 하위 지표로 판정하나, 정책 테마 집계에 별도로 쓰이므로 독립 기준으로 정의"),
+  CAP("<표 1> 유형화 기준 개관"),
+  TBL(["구  분", "질  문", "정  의", "원천 정보", "판정 방법", "유형 수", "배정"], AX.map(r => ({ cells: r })), [1500, 2000, 2400, 3000, 3138, 1300, 1100], { boldFirst: true, center: [5, 6], firstColShade: true, size: 18 }),
   ...NOTE(["* 주: 원천 정보는 열린재정 사업설명자료 파싱 DB와 기업마당 공고 연계 정보. 지원목적의 군집 수 k는 연도 간 일치율·실루엣·최소 군집 크기로 선정"]),
   L(0, "공통 원칙"),
-  L(1, "(코드 체계) 축 문자 + 일련번호(지원목적 A~H 대분류·A1~H2 중분류, 대상 T, 수단 I, 내용 K, 산업 S). 원천 정보가 없으면 0번 코드(T0·I0·K0), 특정 산업이 없으면 S0"),
+  L(1, "(코드 체계) 기준별 문자 + 일련번호(지원목적 A~H 대분류·A1~H2 중분류, 대상 T, 수단 I, 내용 K, 산업 S). 원천 정보가 없으면 0번 코드(T0·I0·K0), 특정 산업이 없으면 S0"),
   L(1, "(명칭 원칙) 지원목적은 '목적 서술어 + (수단)' 형식으로 명명하여 목적과 수단을 구분"),
   L(1, "(신뢰도 표시) 분류기·규칙의 확신도가 낮은 배정(지원목적의 지원내용 기반 배정 중 확률 0.5 미만)은 저신뢰로 표시하여 담당자 확인 대상으로 관리"),
   L(1, "(갱신) 매년 예산서 반영 시 신규 사업을 같은 기준으로 판정하고, 기존 유형에 대응하지 않는 사업이 누적되면 유형 신설을 검토"),
@@ -74,7 +74,7 @@ const overview = [
 
 // ---------- ① 지원목적 ----------
 const purpose = [
-  H1("Ⅱ. 지원목적 축"),
+  H1("Ⅱ. 지원목적 유형"),
   L(0, "지원목적은 '사업이 달성하려는 정책 목적'으로, 8개 대분류·23개 중분류로 구성"),
   L(1, "(원천 정보) 내역사업명 + 내역목적(없으면 세부목적의 해당 내역 구간) + 수혜대상 + 공고 지원내용을 결합한 목적 문서"),
   L(1, "(판정 방법) 문장 임베딩(bge-m3)에서 산업·소관 판별 방향을 제거하고 수단 어휘를 결합한 뒤 K-평균(k=24)으로 군집하여 중분류로 명명·병합"),
@@ -94,7 +94,7 @@ const purpose = [
 
 // ---------- ② 지원대상 ----------
 const target = [
-  H1("Ⅲ. 지원대상 축"),
+  H1("Ⅲ. 지원대상 유형"),
   L(0, "지원대상은 '예산서에 기재된 직접 수혜 주체'로, 10개 유형과 미기재(T0)로 구성"),
   L(1, "(원천 정보) 예산서 '수혜대상' 필드(평균 20자 내외의 명사구)"),
   L(1, "(판정 방법) 수혜대상 문장 임베딩 → K-평균(k=16) → 해석적 병합(10개) → 보정규칙(T8 중 보증·보험 명시 사업을 T10으로 분리)"),
@@ -108,7 +108,7 @@ const target = [
 
 // ---------- ③ 지원수단 ----------
 const instrument = [
-  H1("Ⅳ. 지원수단 축"),
+  H1("Ⅳ. 지원수단 유형"),
   L(0, "지원수단은 '예산이 수혜자에게 전달되는 재정 방식'으로, 9개 유형과 미기재(I0)로 구성"),
   L(1, "(원천 정보) 예산서 '지원형태'(출연·보조·직접·융자·출자)와 사업명·목적·공고의 수단 어휘(보증·팩토링, 바우처, 장려금·인건비, 기술개발)"),
   L(1, "(판정 방법) 지원형태는 범주형이므로 군집 대신 아래 우선순위 규칙을 위에서부터 적용하여 처음 충족하는 유형에 배정"),
@@ -123,7 +123,7 @@ const instrument = [
 
 // ---------- ④ 지원내용 ----------
 const content = [
-  H1("Ⅴ. 지원내용 축"),
+  H1("Ⅴ. 지원내용 유형"),
   L(0, "지원내용은 '수혜자가 실제로 받는 지원 항목'으로, 11개 유형과 미기재(K0)로 구성"),
   L(1, "(원천 정보) 기업마당 공고 지원내용(없으면 내역목적·세부목적)"),
   L(1, "(판정 방법) 지원내용 문장 임베딩에서 산업·소관 판별 방향을 제거한 뒤 K-평균(k=16) → 해석적 병합(11개)"),
@@ -136,7 +136,7 @@ const content = [
 
 // ---------- ⑤ 지원산업 ----------
 const industry = [
-  H1("Ⅵ. 지원산업 축"),
+  H1("Ⅵ. 지원산업 유형"),
   L(0, "지원산업은 '지원이 겨냥하는 기술·산업 영역'으로, 10개 산업 유형과 업종 공통(S0)으로 구성"),
   L(1, "(원천 정보) 사업명·내역목적·공고 지원내용·예산 산출근거와 DB '지원산업' 필드"),
   L(1, "(판정 방법) 유형별 산업 사전(핵심어 6~25개)으로 점수를 매겨 복수 태그와 주(主) 산업을 부여"),
@@ -150,7 +150,7 @@ const industry = [
 
 // ---------- ⑥ AI 관여도 ----------
 const ai = [
-  H1("Ⅶ. AI 관여도 축"),
+  H1("Ⅶ. AI 관여도"),
   L(0, "AI 관여도는 '사업 안에서 AI가 차지하는 위상'으로, 핵심·활용·언급·없음의 4단계로 구성"),
   L(1, "(원천 정보) 사업명·내역목적·공고 지원내용·예산 산출근거"),
   L(1, "(판정 방법) AI 어휘(AI·AX·인공지능·생성형·머신러닝·딥러닝·LLM 등)와 적용 맥락 어휘의 출현으로 연도별 단계를 판정하고, 내역사업 단위로 연도 중 최고 단계를 부여"),
@@ -165,4 +165,4 @@ const doc = new Document({ numbering, styles: { default: { document: { run: { fo
   sections: [{ properties: { page: { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1000, bottom: 1000, left: 1200, right: 1200 } } },
     footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: D, size: 18 })] })] }) },
     children: [...cover, ...overview, ...purpose, ...target, ...instrument, ...content, ...industry, ...ai] }] });
-Packer.toBuffer(doc).then(b => { fs.writeFileSync(__dirname + "/KOSI_지원사업_6축_유형정의서.docx", b); console.log("written", b.length); });
+Packer.toBuffer(doc).then(b => { fs.writeFileSync(__dirname + "/KOSI_지원사업_유형정의서.docx", b); console.log("written", b.length); });

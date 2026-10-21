@@ -1,4 +1,4 @@
-"""6축 유형 정의서용 집계: 축·유형별 2026년 건수·예산·비중, 2024~2026년 누적 건수, 2026년 예산 상위 대표 사업.
+"""유형 정의서용 집계: 기준·유형별 2026년 건수·예산·비중, 2024~2026년 누적 건수, 2026년 예산 상위 대표 사업.
 입력: output_bge-m3/axes_assignments.csv, industry_assignments.csv  출력: output_bge-m3/definition_stats.json
 """
 import json
