@@ -21,7 +21,7 @@ const W2 = [1800, 8100]; const TOT2 = W2.reduce((a, b) => a + b, 0);
 const row = (label, paras) => new TableRow({ children: [cell(label, W2[0], { hdr: true }), cell(paras, W2[1])] });
 const t2 = new Table({ width: { size: TOT2, type: WidthType.DXA }, columnWidths: W2, rows: [
   new TableRow({ children: [cell("구  분", W2[0], { hdr: true }), cell("내       용", W2[1], { hdr: true })] }),
-  row("제목(안)", [P("중소기업 AI 지원, 1.8조원인가 6.9조원인가", { bold: true, after: 20 }), P("— 유형화로 본 AI 지원사업의 실제 규모와 구조(2024~2026년)", { after: 0, size: 20 })]),
+  row("제목(안)", [P("중소기업 AI 지원의 규모와 구조", { bold: true, after: 20 }), P("— 중앙부처 AI 지원사업의 관여도·예산 산출근거 분석(2024~2026년)", { after: 0, size: 20 })]),
   row("현안 및 배경", [
     L(0, "정부는 AI 전환(AX)을 핵심 정책 과제로 추진하고 있으며, 중소기업 지원사업에서도 AI 관련 사업이 빠르게 늘고 있음"),
     L(1, "직전 호(「중소기업 지원사업 유형화로 본 지원구조와 시사점」)에서 AI 지원(핵심+활용)은 2026년 1.83조원으로 2년 사이 2.5배 증가하고, 운영 소관은 6개에서 12개로 확대"),
