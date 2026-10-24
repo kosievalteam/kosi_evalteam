@@ -1,6 +1,6 @@
 """복수 배정(태깅): 단일 배정(주 유형)은 유지하고, 복수의 목적·대상·수단·내용·산업을 가진 사업에 부 유형 태그를 부여.
    - 지원목적: ① 중분류 중심(hyb 임베딩의 유형별 평균)과의 유사도가 주 유형 유사도에 근접(차이 ≤ PURPOSE_MARGIN)하면 부 태그
-                ② 사업명·지원형태의 강한 신호(융자→D1, 보증→D2, 창업→B1, 수출·해외→C1/C2, 장려금→G1, 인력양성→F1) 규칙 태그
+                ② 사업명·지원형태의 강한 신호(융자→D1, 보증→D2, 창업→B1, 수출·해외→C1/C2, 장려금→F3, 인력양성→F1) 규칙 태그
    - 지원대상: 수혜대상 필드의 대상 어휘 사전(T1~T10) → 어휘가 있는 유형 모두 태그
    - 지원수단: 지원형태 메타(출연·보조·직접·융자·출자)를 분해하고 수단 어휘(보증·팩토링, 바우처, 장려금, R&D)를 결합 → 형태별 유형 모두 태그
    - 지원내용: ① 지원내용 문서의 내용 어휘 사전(K1~K11) 2회 이상 ② 유형 중심 유사도 근접(≤ CONTENT_MARGIN)
@@ -53,7 +53,7 @@ ptags, pprim = centroid_tags(Eh, A["중분류"].values, PURPOSE_MARGIN)
 name = prog_text(A["세부사업명"] + " " + A["내역사업명"]); meta = prog_text(A["세부지원"].fillna(""))
 PRULE = [("D1", lambda n, m: ("융자" in m) or bool(re.search(r"\(융자\)", n))), ("D2", lambda n, m: bool(re.search(r"보증|대위변제|팩토링|보험금|재보증", n))),
          ("B1", lambda n, m: bool(re.search(r"창업|스타트업|벤처", n))), ("C2", lambda n, m: bool(re.search(r"해외진출|해외 진출|글로벌", n))), ("C1", lambda n, m: bool(re.search(r"수출", n))),
-         ("G1", lambda n, m: bool(re.search(r"장려금|고용유지|일자리", n))), ("F1", lambda n, m: bool(re.search(r"인력양성|인재양성|인력 양성|인재 양성", n)))]
+         ("F3", lambda n, m: bool(re.search(r"장려금|고용유지|일자리", n))), ("F1", lambda n, m: bool(re.search(r"인력양성|인재양성|인력 양성|인재 양성", n)))]
 purpose_tags = {}
 for k in pprim:
     rule = [name_of[c] for c, f in PRULE if f(name[k], meta[k]) and code(pprim[k]) != c and code(pprim[k])[0] != c[0]]
@@ -84,7 +84,7 @@ for k in ins_prim.index:
     if "바우처" in L: t.append("I9")
     if "출연" in m: t.append("I1" if "R&D과제" in L else "I2")
     if "보조" in m: t.append("I3")
-    if "직접" in m: t.append("I5" if ("장려금인건비" in L and str(pur[k]).startswith("G")) else "I10")
+    if "직접" in m: t.append("I5" if ("장려금인건비" in L and str(pur[k]).startswith("F")) else "I10")
     t = [name_of.get(c, "I7 투자·출자(펀드)") for c in t]
     instrument_tags[k] = cap(ins_prim[k], t)
 

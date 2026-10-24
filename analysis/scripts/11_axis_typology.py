@@ -87,7 +87,7 @@ else:
         if "융자" in m and not (f["어휘_보증팩토링"] == 1 and pur == "D" and "직접" in m): return "I4 융자(정책자금 대출)"
         if f["어휘_보증팩토링"] == 1 and ("직접" in m or pur == "D"): return "I8 보증·보험(신용보강)"
         if f["어휘_바우처"] == 1: return "I9 바우처"
-        if "직접" in m and f["어휘_장려금인건비"] == 1 and pur == "G": return "I5 장려금·수당 직접지급"
+        if "직접" in m and f["어휘_장려금인건비"] == 1 and pur == "F": return "I5 장려금·수당 직접지급"
         if "출연" in m and re.search("보조|직접", m): return "I6 혼합(출연+보조+직접 등 복수 형태)"
         if "출연" in m and f["어휘_R&D과제"] == 1: return "I1 R&D 과제 출연(연구개발비)"
         if "출연" in m: return "I2 출연(기관 운영·인프라·위탁 서비스)"

@@ -59,6 +59,7 @@ if RP and CA and os.path.exists(CA):
     ca = pd.read_csv(CA).set_index("key")
     m5 = df["중분류"].str.startswith(RP) & df["key"].isin(ca.index)
     df.loc[m5, "중분류"] = df.loc[m5, "key"].map(ca["중분류"]); df.loc[m5, "보정"] = "R5 " + df.loc[m5, "key"].map(ca["신뢰"])
+    code2name = {v[:2]: v for v in MID.values()}; df.loc[m5, "중분류"] = df.loc[m5, "중분류"].str[:2].map(code2name).fillna(df.loc[m5, "중분류"])   # 구 명칭 → 현행 매핑 명칭
     n_r5 = int(m5.sum()); df["대분류"] = df["중분류"].str[0].map(MAJ)
     print(f"지원내용 기반 배정 {n_r5}건, 잔여 {int(df['중분류'].str.startswith(RP).sum())}건")
 print("일관배정으로 변경", n_changed_consist, "| 규칙 R1", int(r1.sum()), "R2", int(r2.sum()))

@@ -23,7 +23,7 @@ python scripts/03_select_k.py bge-m3_hyb,bge-m3_fn output_bge-m3/k_selection.csv
 python scripts/05_function_axis.py     # 지원목적(기능) 축 임베딩: 산업영역 어휘 가중 완화
 python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3      # (선택) 사전학습 문장 임베딩 + 영역 방향 제거 → data/emb_bge-m3_fn.npy
 python scripts/04b_compact_profile.py 24 fn   # 군집 프로파일(라벨링 근거)
-python scripts/07_final_typology.py --map config/mapping_fn_k24_v3.json   # 최종 유형 배정·집계표·안정성 지표 (LSA 단독)
+python scripts/07_final_typology.py --map config/mapping_fn_k24_v4.json   # 최종 유형 배정·집계표·안정성 지표 (LSA 단독)
 python scripts/08_charts.py            # 보고서 도표
 ```
 
@@ -35,7 +35,7 @@ python scripts/02b_embed_pretrained.py --backend st --model BAAI/bge-m3   # emb_
 python scripts/04b_compact_profile.py 24 bge-m3_hyb           # 군집 프로파일을 보고 해석 → config/mapping_bge-m3_hyb_k24_v3.json
 python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v3.json --out output_bge-m3
 python scripts/10_content_assign.py   # 목적 서술 불충분(잔여) 사업을 지원내용 문서(공고+산출근거)로 분류 → data/content_assign_bge-m3.csv
-python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v4.json --out output_bge-m3   # 지원내용 기반 배정 반영(전수 유형화)
+python scripts/07_final_typology.py --emb bge-m3_hyb --k 24 --map config/mapping_bge-m3_hyb_k24_v5.json --out output_bge-m3   # 지원내용 기반 배정 반영(전수 유형화); v5: F·G 통합
 python scripts/08_charts.py --emb bge-m3_hyb --out output_bge-m3
 python scripts/09_compare_embeddings.py --a fn --b bge-m3_hyb --out-b output_bge-m3   # LSA 단독 결과와 비교
 python scripts/11_axis_typology.py profile --k_target 16   # 대상·내용 축 군집 프로파일 → config/axes_mapping.json 작성
