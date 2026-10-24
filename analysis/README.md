@@ -45,6 +45,7 @@ python scripts/13_axis_detail.py                           # 축별 상세 집�
 python scripts/14_industry_axis.py                         # 다섯째 축 지원산업(산업 사전 config/industry_dict.json) + AI 관여도, S1~S8 집계·fig7
 python scripts/15_definition_stats.py                      # 지원사업 유형 정의서용 유형별 2026 규모·대표 사업 집계(definition_stats.json)
 node deliverables/build_definitions.js                       # 지원사업 유형 정의서(docx)
+python scripts/17_multilabel.py                           # 복수 배정(태깅): 기준별 부 태그, M1~M4 집계(multilabel_assignments.csv)
 python scripts/16_ai_followup.py                         # 후속 호(AI): 연도별 관여도·검토 결과(config/ai_review.json) 반영, 산출근거 AI 예산 범위, A1 검토표·A2~A5 집계
 node deliverables/build_proposal_ai.js                       # 후속 호(AI) 제안서(docx)
 ```
