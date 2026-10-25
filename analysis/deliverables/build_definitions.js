@@ -1,7 +1,7 @@
 // 중앙부처 중소기업 지원사업 유형 정의서(docx) 생성. 수치·대표 사업은 output_bge-m3/definition_stats.json(scripts/15)에서 읽음
 const fs = require("fs");
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, PageBreak, LevelFormat, BorderStyle, ShadingType, VerticalAlign, PageOrientation, Footer, PageNumber } = require("docx");
-const { AX, MAJ, MID, TGT, INS, CON, IND, AIL } = require("./defs_data");
+const { AX, MAJ, MID, TGT, INS, CON, IND, AIL, CROSS } = require("./defs_data");
 const ST = JSON.parse(fs.readFileSync(__dirname + "/../output_bge-m3/definition_stats.json", "utf8"));
 const D = "KoPub돋움체", B = "KoPub바탕체", TEAL = "1D6B6B", LIGHT = "E8F3F1", HEAD = "2F6F7E";
 const sp = (before = 0, after = 0) => ({ before, after, line: 360 });
@@ -85,6 +85,7 @@ const purpose = [
   L(1, "(지원내용 기반 배정) 목적 서술이 '산업 육성·생태계 조성·활성화' 등 일반 어휘에 그쳐 목적 군집이 형성되지 않은 사업은 지원내용 문서(사업명·공고 지원내용·산출근거·수혜대상·지원형태)를 분류기로 판정"),
   L(2, "확률 0.5 미만은 저신뢰로 표시하고, 소상공인 대상 비용부담 경감·손실보상 사업은 D3로 배정(내용 명시 규칙)"),
   L(1, "(경계 원칙) 목적과 수단을 분리하여 판정: 융자·보조 등 수단은 목적 판정의 근거로 쓰지 않으며, 같은 수단이라도 서술된 목적에 따라 배정"),
+  L(1, "(선행연구 대응) 박노욱 외(2016)·김희선(2017)·장우현(2023)의 지원목적 분류 항목은 모두 본 유형에 대응하며, 협업·상생, 지역경제 활성화, 공공조달 판로 등 횡단적 주제는 지원대상·지원내용 유형으로 식별(붙임 참조)"),
   CAP("<표 2> 지원목적 대분류 정의"),
   TBL(["코드", "대분류", "정  의", "포함 중분류", "2026 규모"], MAJ.map(([c, n, d, m]) => ({ cells: [c, n, d, m, scale("대분류", c)] })), [800, 3000, 6838, 2600, 1200], { boldFirst: true, center: [0, 3, 4], firstColShade: true, size: 18 }),
   ...NOTE([sumNote("대분류")]),
@@ -163,8 +164,19 @@ const ai = [
   ...NOTE([sumNote("AI관여도")]),
 ];
 
+const annex = [
+  H1("붙임. 선행연구 분류 항목과 지원목적 유형의 대응"),
+  L(0, "본 유형은 선행연구의 지원목적 분류를 모두 포괄하며, 수단 성격의 항목은 목적으로 재정의하고 횡단적 주제는 다른 기준과 부 태그로 식별"),
+  L(1, "박노욱 외(2016)는 지원목적을 초기 투입요소(운영자금·자재·인력·기술·장비/시설·공간/입지), 시장매칭(내수·수출), 운영(경영컨설팅·상품화/사업화·홍보)의 11개 항목으로, 김희선(2017)은 중위목적 8개(B-10~80)·하위목적 29개(C-01~29)로, 장우현(2023)은 시장진입·생산성 향상·판로·전환의 4개 하위 목적과 수단 코드로 구분"),
+  L(1, "창업은 박노욱 외(2016)에 목적 항목이 없으나 창업·벤처 육성(B)으로 분리하고, 자재·공간/입지는 지원내용 유형(K2·K8)으로, 조세감면·규제·조달 등 비재정 수단은 범위 밖으로 둠"),
+  L(1, "협업·상생·동반성장(B-70), 지역경제 활성화(B-80), 공공조달·하도급(장우현, 2023)은 목적이 아닌 지원 방식·대상이므로 산학연 공동 R&D(A3), 협력 기반 조성(K2), 지역 프로그램(K3), 지역 특정 대상(T1), 수요 연계 대상(T8)으로 식별"),
+  CAP("<붙임표 1> 선행연구 분류 항목과 지원목적 유형의 대응"),
+  TBL(["본 연구 유형", "박노욱 외(2016) 지원목적", "김희선(2017) 정책목적(中·小)", "장우현(2023) 하위 분류(목적·수단)", "SIMS 세부분야"], CROSS.map(r => ({ cells: r })), [1900, 2700, 3600, 3700, 2538], { boldFirst: true, firstColShade: true, size: 17 }),
+  ...NOTE(["* 주: 1) 김희선(2017)의 B·C 코드는 각각 중위·하위 정책목적, Z 코드는 지원형태", "     2) SIMS 세부분야는 중소기업 지원사업 통합관리시스템의 분야 분류(경영·금융·기술·인력·창업·수출·내수·기타)로 복수 성격 사업은 한 분야에만 배정됨"]),
+];
+
 const doc = new Document({ numbering, styles: { default: { document: { run: { font: B, size: 22 } } } },
   sections: [{ properties: { page: { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1000, bottom: 1000, left: 1200, right: 1200 } } },
     footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: D, size: 18 })] })] }) },
-    children: [...cover, ...overview, ...purpose, ...target, ...instrument, ...content, ...industry, ...ai] }] });
+    children: [...cover, ...overview, ...purpose, ...target, ...instrument, ...content, ...industry, ...ai, ...annex] }] });
 Packer.toBuffer(doc).then(b => { fs.writeFileSync(__dirname + "/KOSI_지원사업_유형정의서.docx", b); console.log("written", b.length); });
